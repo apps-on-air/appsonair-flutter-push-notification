@@ -1,5 +1,5 @@
 group = "com.logicwind.appsonair_flutter_push_notification"
-version = "1.0-SNAPSHOT"
+version = "0.0.1-alpha"
 
 buildscript {
     val kotlinVersion = "2.2.20"

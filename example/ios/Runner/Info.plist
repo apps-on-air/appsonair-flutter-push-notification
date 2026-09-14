@@ -29,7 +29,7 @@
 	<!-- Required by AppsOnAir-iOS-Core / AppsOnAir-iOS-Push (initialize()).
 	     TODO: Replace with your own AppsOnAir app ID. -->
 	<key>AppsonairAppId</key>
-	<string>poc-app</string>
+	<string>XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

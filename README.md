@@ -173,17 +173,7 @@ adding the following to your app's `pubspec.yaml`:
 
 #### Option 1 — CocoaPods (default)
 
-Use this if you want to always use CocoaPods regardless of any global Flutter setting:
-
-```yaml
-# pubspec.yaml
-flutter:
-  config:
-    # false → always uses CocoaPods (default)
-    enable-swift-package-manager: false
-```
-
-No other steps needed. Run:
+No extra steps needed. Run:
 
 ```sh
 flutter pub get
@@ -192,16 +182,12 @@ cd ios && pod install
 
 #### Option 2 — Swift Package Manager
 
-> Requires **Flutter ≥ 3.24.0**. SPM support on iOS is available starting from this version.
+> Requires **Flutter ≥ 3.24.0**.
 
-Use this to opt into SPM and use `AppPushService` via Swift Package Manager:
+Enable SPM globally via the Flutter CLI (one-time setup):
 
-```yaml
-# pubspec.yaml
-flutter:
-  config:
-    # true → uses Swift Package Manager
-    enable-swift-package-manager: true
+```sh
+flutter config --enable-swift-package-manager
 ```
 
 Then run:
@@ -210,25 +196,20 @@ Then run:
 flutter pub get
 ```
 
-Flutter will automatically resolve `AppPushService` via SPM. No additional Xcode configuration is
-required.
+Flutter will automatically resolve `AppsOnAir-AppPush` via SPM from GitHub. No Podfile or
+additional Xcode configuration required.
 
-> **Note:** You can also enable SPM globally for all your Flutter projects (instead of
-> per-project) by running:
+> **To switch back to CocoaPods:**
 > ```sh
-> flutter config --enable-swift-package-manager
+> flutter config --no-enable-swift-package-manager
 > ```
-> In that case, you can remove the `config` block from `pubspec.yaml` entirely and Flutter will
-> use SPM automatically.
 
 #### Summary
 
-| `enable-swift-package-manager` | Flutter version | Result |
+| Flutter SPM config | Flutter version | Result |
 |:---:|:---:|:---|
-| `false` | any | **CocoaPods** — uses `AppPushService` |
-| `true` | ≥ 3.24.0 | **SPM** — uses `AppPushService` |
-| not set | any (global off) | **CocoaPods** — default behaviour |
-| not set | ≥ 3.24.0 (global on) | **SPM** — Flutter global setting applies |
+| disabled (default) | any | **CocoaPods** |
+| enabled | ≥ 3.24.0 | **Swift Package Manager** |
 
 > 💡 **Recommendation:** We recommend migrating to **Swift Package Manager** — it is Apple's
 > official, actively maintained dependency manager and receives updates first.
@@ -237,11 +218,22 @@ required.
 
 ## Example
 
-Initialize the SDK once, as early as possible (`main()` or your root widget's `initState`):
+Initialize the SDK once, as early as possible. Call `runApp` **before** `initialize` to avoid
+a white screen if the channel is not ready yet:
 
 ```dart
 import 'package:appsonair_flutter_push_notification/appsonair_flutter_push_notification.dart';
 
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const MyApp());
+  await AppPushService.initialize();
+}
+```
+
+Alternatively, initialize inside your root widget's `initState`:
+
+```dart
 @override
 void initState() {
   super.initState();

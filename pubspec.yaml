@@ -1,5 +1,5 @@
 name: appsonair_flutter_push_notification
-description: "Flutter plugin for the AppsOnAir push notification SDKs (Android/iOS)."
+description: "Flutter plugin for the AppsOnAir Push Notification service (Android/iOS)."
 version: 0.0.1-alpha
 homepage: https://appsonair.com
 repository: https://github.com/apps-on-air/appsonair-flutter-push-notification
