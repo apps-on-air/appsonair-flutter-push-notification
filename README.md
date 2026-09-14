@@ -4,6 +4,19 @@ A Flutter plugin wrapping the native AppsOnAir Push Notification SDKs (Android/i
 registration, rich notifications, taps/actions, tags, aliases, opt-in/opt-out, and more, behind
 one Dart API.
 
+> [!WARNING]
+> **Alpha release — not for production use.**
+>
+> `0.0.1-alpha` is an early preview, intended for evaluation, prototypes, and internal test
+> builds. Do **not** ship it in a production app or one with a large user base.
+>
+> - The public API may change without notice and may not stay source-compatible — expect to
+>   update your integration between releases.
+> - Breaking changes are not limited to major versions while the SDK is pre-1.0.
+> - Not yet proven at scale; some behaviour is still unverified in real-world use.
+>
+> Pin this exact version rather than a version range, and re-test on every upgrade.
+
 ## Features Overview
 
 - Push Token 📮
@@ -181,7 +194,7 @@ cd ios && pod install
 
 > Requires **Flutter ≥ 3.24.0**. SPM support on iOS is available starting from this version.
 
-Use this to opt into SPM and use `AppsOnAirPush` via Swift Package Manager:
+Use this to opt into SPM and use `AppPushService` via Swift Package Manager:
 
 ```yaml
 # pubspec.yaml
@@ -197,7 +210,7 @@ Then run:
 flutter pub get
 ```
 
-Flutter will automatically resolve `AppsOnAirPush` via SPM. No additional Xcode configuration is
+Flutter will automatically resolve `AppPushService` via SPM. No additional Xcode configuration is
 required.
 
 > **Note:** You can also enable SPM globally for all your Flutter projects (instead of
@@ -212,8 +225,8 @@ required.
 
 | `enable-swift-package-manager` | Flutter version | Result |
 |:---:|:---:|:---|
-| `false` | any | **CocoaPods** — uses `AppsOnAirPush` |
-| `true` | ≥ 3.24.0 | **SPM** — uses `AppsOnAirPush` |
+| `false` | any | **CocoaPods** — uses `AppPushService` |
+| `true` | ≥ 3.24.0 | **SPM** — uses `AppPushService` |
 | not set | any (global off) | **CocoaPods** — default behaviour |
 | not set | ≥ 3.24.0 (global on) | **SPM** — Flutter global setting applies |
 
@@ -232,7 +245,7 @@ import 'package:appsonair_flutter_push_notification/appsonair_flutter_push_notif
 @override
 void initState() {
   super.initState();
-  AppsOnAirPush.initialize();
+  AppPushService.initialize();
 }
 ```
 
@@ -242,21 +255,21 @@ Info.plist entry (iOS) declared above — no need to pass it from Dart.
 ### Listening for events
 
 ```dart
-AppsOnAirPush.addTokenListener((token, apnsEnvironment) {
+AppPushService.addTokenListener((token, apnsEnvironment) {
   // Android: FCM token, apnsEnvironment is always null.
   // iOS: hex APNs token, apnsEnvironment is "sandbox" or "production".
   print('Token: $token');
 });
 
-AppsOnAirPush.addNotificationReceivedListener((notification) {
+AppPushService.addNotificationReceivedListener((notification) {
   print('Received: ${notification.title}');
 });
 
-AppsOnAirPush.addNotificationOpenedListener((notification) {
+AppPushService.addNotificationOpenedListener((notification) {
   print('Opened: ${notification.title}');
 });
 
-AppsOnAirPush.addErrorListener((error) {
+AppPushService.addErrorListener((error) {
   print('[${error.code}] ${error.message}');
 });
 ```
@@ -264,19 +277,19 @@ AppsOnAirPush.addErrorListener((error) {
 ### Requesting notification permission
 
 ```dart
-final granted = await AppsOnAirPush.isPermissionGranted();
+final granted = await AppPushService.isPermissionGranted();
 if (!granted) {
-  await AppsOnAirPush.Notifications.requestPermission();
+  await AppPushService.Notifications.requestPermission();
 }
 
 // Permanently denied? Send the user to Settings instead:
-await AppsOnAirPush.Notifications.requestPermission(fallbackToSettings: true);
+await AppPushService.Notifications.requestPermission(fallbackToSettings: true);
 ```
 
 ### Controlling foreground display
 
 ```dart
-AppsOnAirPush.Notifications.addForegroundWillDisplayListener((event) {
+AppPushService.Notifications.addForegroundWillDisplayListener((event) {
   // Do nothing → the SDK shows it.
   // Call preventDefault() → suppressed entirely, handle it yourself.
   event.preventDefault();
@@ -286,7 +299,7 @@ AppsOnAirPush.Notifications.addForegroundWillDisplayListener((event) {
 ### Handling taps and action buttons
 
 ```dart
-AppsOnAirPush.Notifications.addClickListener((event) {
+AppPushService.Notifications.addClickListener((event) {
   final actionId = event.actionId; // null = body tap, else the tapped action's ID
   print('Tapped ${event.notification.title}, action: $actionId');
 });
@@ -295,49 +308,49 @@ AppsOnAirPush.Notifications.addClickListener((event) {
 ### Identity, tags, aliases, and email
 
 ```dart
-await AppsOnAirPush.login('user_12345');
-await AppsOnAirPush.logout();
+await AppPushService.login('user_12345');
+await AppPushService.logout();
 
-await AppsOnAirPush.User.addTagWithKey('plan', 'premium');
-await AppsOnAirPush.User.addTags({'plan': 'premium', 'region': 'us'});
-await AppsOnAirPush.User.removeTag('plan');
-final tags = await AppsOnAirPush.User.getTags();
+await AppPushService.User.addTagWithKey('plan', 'premium');
+await AppPushService.User.addTags({'plan': 'premium', 'region': 'us'});
+await AppPushService.User.removeTag('plan');
+final tags = await AppPushService.User.getTags();
 
-await AppsOnAirPush.User.addAlias('crm_id', 'CRM-9876');
-await AppsOnAirPush.User.addEmail('user@example.com');
+await AppPushService.User.addAlias('crm_id', 'CRM-9876');
+await AppPushService.User.addEmail('user@example.com');
 
-await AppsOnAirPush.User.setLanguage('fr');
+await AppPushService.User.setLanguage('fr');
 ```
 
 ### Opt-in / opt-out
 
 ```dart
-await AppsOnAirPush.User.pushSubscription.optOut();
-await AppsOnAirPush.User.pushSubscription.optIn();
-final optedIn = await AppsOnAirPush.User.pushSubscription.isOptedIn;
+await AppPushService.User.pushSubscription.optOut();
+await AppPushService.User.pushSubscription.optIn();
+final optedIn = await AppPushService.User.pushSubscription.isOptedIn;
 ```
 
 ### Consent (GDPR)
 
 ```dart
-await AppsOnAirPush.setConsentRequired(true);
-await AppsOnAirPush.initialize();
+await AppPushService.setConsentRequired(true);
+await AppPushService.initialize();
 
-await AppsOnAirPush.setConsentGiven(true);  // user accepted
-await AppsOnAirPush.setConsentGiven(false); // user withdrew
+await AppPushService.setConsentGiven(true);  // user accepted
+await AppPushService.setConsentGiven(false); // user withdrew
 ```
 
 ### Managing delivered notifications
 
 ```dart
-await AppsOnAirPush.clearAllNotifications();
-await AppsOnAirPush.Notifications.removeNotification('order-4821');
-await AppsOnAirPush.Notifications.removeGroupedNotifications('orders'); // Android only
+await AppPushService.clearAllNotifications();
+await AppPushService.Notifications.removeNotification('order-4821');
+await AppPushService.Notifications.removeGroupedNotifications('orders'); // Android only
 ```
 
 ### Debug logging
 
 ```dart
-await AppsOnAirPush.Debug.setLogLevel(LogLevel.verbose);
-await AppsOnAirPush.initialize();
+await AppPushService.Debug.setLogLevel(LogLevel.verbose);
+await AppPushService.initialize();
 ```

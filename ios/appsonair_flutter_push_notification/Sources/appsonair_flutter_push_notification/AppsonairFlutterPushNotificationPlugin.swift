@@ -1,4 +1,4 @@
-import AppsOnAirPush
+import AppsOnAir_AppPush
 import Flutter
 import UIKit
 
@@ -24,12 +24,12 @@ public class AppsonairFlutterPushNotificationPlugin: NSObject, FlutterPlugin, Fl
     )
     eventChannel.setStreamHandler(instance)
 
-    AppsOnAirPush.setListener(instance)
-    AppsOnAirPush.Notifications.addForegroundLifecycleListener(instance)
-    AppsOnAirPush.Notifications.addClickListener(instance)
-    AppsOnAirPush.Notifications.addPermissionObserver(instance)
-    AppsOnAirPush.User.pushSubscription.addObserver(instance)
-    AppsOnAirPush.User.addObserver(instance)
+    AppPushService.setListener(instance)
+    AppPushService.Notifications.addForegroundLifecycleListener(instance)
+    AppPushService.Notifications.addClickListener(instance)
+    AppPushService.Notifications.addPermissionObserver(instance)
+    AppPushService.User.pushSubscription.addObserver(instance)
+    AppPushService.User.addObserver(instance)
   }
 
   // MARK: - FlutterStreamHandler
@@ -51,109 +51,109 @@ public class AppsonairFlutterPushNotificationPlugin: NSObject, FlutterPlugin, Fl
 
     switch call.method {
     case "initialize":
-      AppsOnAirPush.initialize(
+      AppPushService.initialize(
         debug: args?["debug"] as? Bool ?? false,
         swizzle: args?["swizzle"] as? Bool ?? true
       )
       result(nil)
     case "login":
-      AppsOnAirPush.login(args?["externalId"] as? String ?? "")
+      AppPushService.login(args?["externalId"] as? String ?? "")
       result(nil)
     case "logout":
-      AppsOnAirPush.logout()
+      AppPushService.logout()
       result(nil)
     case "getDeviceId":
-      result(AppsOnAirPush.deviceId)
+      result(AppPushService.deviceId)
     case "setConsentRequired":
-      AppsOnAirPush.consentRequired = args?["value"] as? Bool ?? false
+      AppPushService.consentRequired = args?["value"] as? Bool ?? false
       result(nil)
     case "setConsentGiven":
-      AppsOnAirPush.consentGiven = args?["value"] as? Bool ?? false
+      AppPushService.consentGiven = args?["value"] as? Bool ?? false
       result(nil)
     case "isPermissionGranted":
       Task { @MainActor in
-        result(await AppsOnAirPush.isPermissionGranted())
+        result(await AppPushService.isPermissionGranted())
       }
     case "clearAllNotifications":
-      AppsOnAirPush.clearAllNotifications()
+      AppPushService.clearAllNotifications()
       result(nil)
 
     // MARK: User namespace
     case "user#getExternalId":
-      result(AppsOnAirPush.User.externalId)
+      result(AppPushService.User.externalId)
     case "user#pushSubscription#isOptedIn":
-      result(AppsOnAirPush.User.pushSubscription.optedIn)
+      result(AppPushService.User.pushSubscription.optedIn)
     case "user#pushSubscription#getToken":
-      result(AppsOnAirPush.User.pushSubscription.token)
+      result(AppPushService.User.pushSubscription.token)
     case "user#pushSubscription#optIn":
-      AppsOnAirPush.User.pushSubscription.optIn()
+      AppPushService.User.pushSubscription.optIn()
       result(nil)
     case "user#pushSubscription#optOut":
-      AppsOnAirPush.User.pushSubscription.optOut()
+      AppPushService.User.pushSubscription.optOut()
       result(nil)
     case "user#addTag":
-      AppsOnAirPush.User.addTag(
+      AppPushService.User.addTag(
         key: args?["key"] as? String ?? "",
         value: args?["value"] as? String ?? ""
       )
       result(nil)
     case "user#addTags":
-      AppsOnAirPush.User.addTags(args?["tags"] as? [String: String] ?? [:])
+      AppPushService.User.addTags(args?["tags"] as? [String: String] ?? [:])
       result(nil)
     case "user#removeTag":
-      AppsOnAirPush.User.removeTag(args?["key"] as? String ?? "")
+      AppPushService.User.removeTag(args?["key"] as? String ?? "")
       result(nil)
     case "user#removeTags":
-      AppsOnAirPush.User.removeTags(args?["keys"] as? [String] ?? [])
+      AppPushService.User.removeTags(args?["keys"] as? [String] ?? [])
       result(nil)
     case "user#getTags":
-      result(AppsOnAirPush.User.getTags())
+      result(AppPushService.User.getTags())
     case "user#setLanguage":
-      AppsOnAirPush.User.setLanguage(args?["code"] as? String ?? "")
+      AppPushService.User.setLanguage(args?["code"] as? String ?? "")
       result(nil)
     case "user#getLanguage":
-      result(AppsOnAirPush.User.language)
+      result(AppPushService.User.language)
     case "user#addAlias":
-      AppsOnAirPush.User.addAlias(
+      AppPushService.User.addAlias(
         label: args?["label"] as? String ?? "",
         id: args?["id"] as? String ?? ""
       )
       result(nil)
     case "user#addAliases":
-      AppsOnAirPush.User.addAliases(args?["aliases"] as? [String: String] ?? [:])
+      AppPushService.User.addAliases(args?["aliases"] as? [String: String] ?? [:])
       result(nil)
     case "user#removeAlias":
-      AppsOnAirPush.User.removeAlias(args?["label"] as? String ?? "")
+      AppPushService.User.removeAlias(args?["label"] as? String ?? "")
       result(nil)
     case "user#removeAliases":
-      AppsOnAirPush.User.removeAliases(args?["labels"] as? [String] ?? [])
+      AppPushService.User.removeAliases(args?["labels"] as? [String] ?? [])
       result(nil)
     case "user#addEmail":
-      AppsOnAirPush.User.addEmail(args?["address"] as? String ?? "")
+      AppPushService.User.addEmail(args?["address"] as? String ?? "")
       result(nil)
     case "user#removeEmail":
-      AppsOnAirPush.User.removeEmail(args?["address"] as? String ?? "")
+      AppPushService.User.removeEmail(args?["address"] as? String ?? "")
       result(nil)
 
     // MARK: Notifications namespace
     case "notifications#permission":
-      result(AppsOnAirPush.Notifications.permission)
+      result(AppPushService.Notifications.permission)
     case "notifications#canRequestPermission":
-      result(AppsOnAirPush.Notifications.canRequestPermission)
+      result(AppPushService.Notifications.canRequestPermission)
     case "notifications#requestPermission":
-      AppsOnAirPush.Notifications.requestPermission(
+      AppPushService.Notifications.requestPermission(
         fallbackToSettings: args?["fallbackToSettings"] as? Bool ?? false
       )
       result(nil)
     case "notifications#registerForProvisionalAuthorization":
-      AppsOnAirPush.Notifications.registerForProvisionalAuthorization()
+      AppPushService.Notifications.registerForProvisionalAuthorization()
       result(nil)
     case "notifications#clearAll":
-      AppsOnAirPush.Notifications.clearAllNotifications()
+      AppPushService.Notifications.clearAllNotifications()
       result(nil)
     case "notifications#removeNotification":
       if let id = args?["id"] as? String {
-        AppsOnAirPush.Notifications.removeNotification(withIdentifier: id)
+        AppPushService.Notifications.removeNotification(withIdentifier: id)
       }
       result(nil)
     case "notifications#removeGroupedNotifications":
@@ -169,10 +169,10 @@ public class AppsonairFlutterPushNotificationPlugin: NSObject, FlutterPlugin, Fl
 
     // MARK: Debug namespace
     case "debug#setLogLevel":
-      AppsOnAirPush.Debug.logLevel = LogLevel(wire: args?["level"] as? String)
+      AppPushService.Debug.logLevel = LogLevel(wire: args?["level"] as? String)
       result(nil)
     case "debug#getLogLevel":
-      result(AppsOnAirPush.Debug.logLevel.wireValue)
+      result(AppPushService.Debug.logLevel.wireValue)
 
     default:
       result(FlutterMethodNotImplemented)

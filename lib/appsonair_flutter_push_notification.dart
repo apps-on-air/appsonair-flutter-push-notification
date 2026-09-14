@@ -19,8 +19,8 @@ export 'src/user_manager.dart'
 ///
 /// Call [initialize] once, as early as possible, then use [User],
 /// [Notifications], and [Debug] for the rest of the API.
-class AppsOnAirPush {
-  AppsOnAirPush._();
+class AppPushService {
+  AppPushService._();
 
   static AppsonairFlutterPushNotificationPlatform get _platform =>
       AppsonairFlutterPushNotificationPlatform.instance;

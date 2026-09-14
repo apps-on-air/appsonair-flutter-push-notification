@@ -27,28 +27,28 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _init() async {
-    await AppsOnAirPush.Debug.setLogLevel(LogLevel.verbose);
-    await AppsOnAirPush.initialize(debug: true);
+    await AppPushService.Debug.setLogLevel(LogLevel.verbose);
+    await AppPushService.initialize(debug: true);
 
-    AppsOnAirPush.addTokenListener((token, environment) {
+    AppPushService.addTokenListener((token, environment) {
       _appendLog(
         'Token updated: $token${environment != null ? ' ($environment)' : ''}',
       );
     });
-    AppsOnAirPush.addErrorListener((error) {
+    AppPushService.addErrorListener((error) {
       _appendLog('Error: ${error.code} — ${error.message}');
     });
-    AppsOnAirPush.Notifications.addForegroundWillDisplayListener((event) {
+    AppPushService.Notifications.addForegroundWillDisplayListener((event) {
       _appendLog('Notification will display: ${event.notification.title}');
     });
-    AppsOnAirPush.Notifications.addClickListener((event) {
+    AppPushService.Notifications.addClickListener((event) {
       _appendLog(
         'Notification clicked: ${event.notification.title} (action: ${event.actionId})',
       );
     });
 
-    final deviceId = await AppsOnAirPush.deviceId;
-    final tags = await AppsOnAirPush.User.getTags();
+    final deviceId = await AppPushService.deviceId;
+    final tags = await AppPushService.User.getTags();
     if (!mounted) return;
     setState(() {
       _deviceId = deviceId;
@@ -80,22 +80,22 @@ class _MyAppState extends State<MyApp> {
                 children: [
                   ElevatedButton(
                     onPressed: () =>
-                        AppsOnAirPush.Notifications.requestPermission(),
+                        AppPushService.Notifications.requestPermission(),
                     child: const Text('Request permission'),
                   ),
                   ElevatedButton(
                     onPressed: () async {
-                      await AppsOnAirPush.User.addTagWithKey(
+                      await AppPushService.User.addTagWithKey(
                         'favorite_color',
                         'blue',
                       );
-                      final tags = await AppsOnAirPush.User.getTags();
+                      final tags = await AppPushService.User.getTags();
                       setState(() => _tags = tags);
                     },
                     child: const Text('Add tag'),
                   ),
                   ElevatedButton(
-                    onPressed: () => AppsOnAirPush.login('demo-user-123'),
+                    onPressed: () => AppPushService.login('demo-user-123'),
                     child: const Text('Login'),
                   ),
                 ],

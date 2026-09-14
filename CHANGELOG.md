@@ -6,7 +6,7 @@
     Info.plist entry (both via AppsOnAir Core). The Dart `appId` parameter is
     now optional and kept only for source compatibility.
   * `initialize()` gained an iOS-only `swizzle` parameter (default `true`).
-  * `subscriptionId` / `AppsOnAirPush.User.pushSubscription.id` now returns a
+  * `subscriptionId` / `AppPushService.User.pushSubscription.id` now returns a
     real value on Android (was hardcoded `null` — the native getter is public
     again).
   * Added `getBadgeCount()` and `incrementBadgeCount(delta)`, matching the

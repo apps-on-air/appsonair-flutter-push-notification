@@ -2,7 +2,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        // AppsOnAir Core, a transitive dependency of com.appsonair:push, is published on JitPack.
         maven("https://jitpack.io")
     }
 }

@@ -5,22 +5,22 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.NonNull
-import com.appsonair.push.AppsOnAirNotificationsNS
-import com.appsonair.push.AppsOnAirPush
-import com.appsonair.push.AppsOnAirUser
-import com.appsonair.push.INotificationClickListener
-import com.appsonair.push.INotificationLifecycleListener
-import com.appsonair.push.INotificationPermissionObserver
-import com.appsonair.push.IPushSubscriptionObserver
-import com.appsonair.push.IUserStateObserver
-import com.appsonair.push.LogLevel
-import com.appsonair.push.NotificationClickEvent
-import com.appsonair.push.NotificationWillDisplayEvent
-import com.appsonair.push.PushError
-import com.appsonair.push.PushListener
-import com.appsonair.push.PushNotification
-import com.appsonair.push.PushSubscriptionChangedState
-import com.appsonair.push.UserChangedState
+import com.appsonair.apppush.AppPushService
+import com.appsonair.apppush.INotificationClickListener
+import com.appsonair.apppush.INotificationLifecycleListener
+import com.appsonair.apppush.INotificationPermissionObserver
+import com.appsonair.apppush.IPushSubscriptionObserver
+import com.appsonair.apppush.IUserStateObserver
+import com.appsonair.apppush.LogLevel
+import com.appsonair.apppush.NotificationClickEvent
+import com.appsonair.apppush.NotificationWillDisplayEvent
+import com.appsonair.apppush.PushError
+import com.appsonair.apppush.PushListener
+import com.appsonair.apppush.PushNotification
+import com.appsonair.apppush.PushNotifications
+import com.appsonair.apppush.PushSubscriptionChangedState
+import com.appsonair.apppush.PushUser
+import com.appsonair.apppush.UserChangedState
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -81,23 +81,23 @@ class AppsonairFlutterPushNotificationPlugin :
         )
         eventChannel.setStreamHandler(this)
 
-        AppsOnAirPush.setListener(this)
-        AppsOnAirPush.Notifications.addForegroundLifecycleListener(this)
-        AppsOnAirPush.Notifications.addClickListener(this)
-        AppsOnAirPush.Notifications.addPermissionObserver(this)
-        AppsOnAirUser.PushSubscription.addObserver(this)
-        AppsOnAirPush.User.addObserver(this)
+        AppPushService.setListener(this)
+        AppPushService.Notifications.addForegroundLifecycleListener(this)
+        AppPushService.Notifications.addClickListener(this)
+        AppPushService.Notifications.addPermissionObserver(this)
+        PushUser.PushSubscription.addObserver(this)
+        AppPushService.User.addObserver(this)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
         eventChannel.setStreamHandler(null)
-        AppsOnAirPush.setListener(null)
-        AppsOnAirPush.Notifications.removeForegroundLifecycleListener(this)
-        AppsOnAirPush.Notifications.removeClickListener(this)
-        AppsOnAirPush.Notifications.removePermissionObserver(this)
-        AppsOnAirUser.PushSubscription.removeObserver(this)
-        AppsOnAirPush.User.removeObserver(this)
+        AppPushService.setListener(null)
+        AppPushService.Notifications.removeForegroundLifecycleListener(this)
+        AppPushService.Notifications.removeClickListener(this)
+        AppPushService.Notifications.removePermissionObserver(this)
+        PushUser.PushSubscription.removeObserver(this)
+        AppPushService.User.removeObserver(this)
     }
 
     // ── ActivityAware ────────────────────────────────────────────────────
@@ -105,7 +105,7 @@ class AppsonairFlutterPushNotificationPlugin :
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activity = binding.activity
         // Handle a notification tap that cold-started the app.
-        AppsOnAirPush.handleNotificationTapIntent(binding.activity.intent)
+        AppPushService.handleNotificationTapIntent(binding.activity.intent)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
@@ -139,47 +139,47 @@ class AppsonairFlutterPushNotificationPlugin :
                     // appId is no longer passed to native — Core resolves it from the
                     // "AppsonairAppId" AndroidManifest meta-data. "swizzle" is iOS-only.
                     val debug = call.argument<Boolean>("debug") ?: false
-                    AppsOnAirPush.initialize(applicationContext, debug)
+                    AppPushService.initialize(applicationContext, debug)
                     result.success(null)
                 }
                 "login" -> {
-                    AppsOnAirPush.login(call.argument<String>("externalId") ?: "")
+                    AppPushService.login(call.argument<String>("externalId") ?: "")
                     result.success(null)
                 }
                 "logout" -> {
-                    AppsOnAirPush.logout()
+                    AppPushService.logout()
                     result.success(null)
                 }
-                "getDeviceId" -> result.success(AppsOnAirPush.getDeviceId())
+                "getDeviceId" -> result.success(AppPushService.getDeviceId())
                 "setConsentRequired" -> {
-                    AppsOnAirPush.consentRequired = call.argument<Boolean>("value") ?: false
+                    AppPushService.consentRequired = call.argument<Boolean>("value") ?: false
                     result.success(null)
                 }
                 "setConsentGiven" -> {
-                    AppsOnAirPush.consentGiven = call.argument<Boolean>("value") ?: false
+                    AppPushService.consentGiven = call.argument<Boolean>("value") ?: false
                     result.success(null)
                 }
-                "isPermissionGranted" -> result.success(AppsOnAirPush.isPermissionGranted(applicationContext))
+                "isPermissionGranted" -> result.success(AppPushService.isPermissionGranted(applicationContext))
                 "clearAllNotifications" -> {
-                    AppsOnAirPush.clearAllNotifications(applicationContext)
+                    AppPushService.clearAllNotifications(applicationContext)
                     result.success(null)
                 }
 
                 // ── User namespace ──────────────────────────────────────
-                "user#getExternalId" -> result.success(AppsOnAirUser.externalId)
+                "user#getExternalId" -> result.success(PushUser.externalId)
                 "user#pushSubscription#isOptedIn" ->
-                    result.success(AppsOnAirUser.PushSubscription.optedIn)
-                "user#pushSubscription#getToken" -> result.success(AppsOnAirUser.PushSubscription.token)
+                    result.success(PushUser.PushSubscription.optedIn)
+                "user#pushSubscription#getToken" -> result.success(PushUser.PushSubscription.token)
                 "user#pushSubscription#optIn" -> {
-                    AppsOnAirUser.PushSubscription.optIn()
+                    PushUser.PushSubscription.optIn()
                     result.success(null)
                 }
                 "user#pushSubscription#optOut" -> {
-                    AppsOnAirUser.PushSubscription.optOut()
+                    PushUser.PushSubscription.optOut()
                     result.success(null)
                 }
                 "user#addTag" -> {
-                    AppsOnAirUser.addTag(
+                    PushUser.addTag(
                         call.argument<String>("key") ?: "",
                         call.argument<String>("value") ?: ""
                     )
@@ -188,27 +188,27 @@ class AppsonairFlutterPushNotificationPlugin :
                 "user#addTags" -> {
                     @Suppress("UNCHECKED_CAST")
                     val tags = call.argument<Map<String, String>>("tags") ?: emptyMap()
-                    AppsOnAirUser.addTags(tags)
+                    PushUser.addTags(tags)
                     result.success(null)
                 }
                 "user#removeTag" -> {
-                    AppsOnAirUser.removeTag(call.argument<String>("key") ?: "")
+                    PushUser.removeTag(call.argument<String>("key") ?: "")
                     result.success(null)
                 }
                 "user#removeTags" -> {
                     @Suppress("UNCHECKED_CAST")
                     val keys = call.argument<List<String>>("keys") ?: emptyList()
-                    AppsOnAirUser.removeTags(keys)
+                    PushUser.removeTags(keys)
                     result.success(null)
                 }
-                "user#getTags" -> AppsOnAirUser.getTags { tags -> result.success(tags) }
+                "user#getTags" -> PushUser.getTags { tags -> result.success(tags) }
                 "user#setLanguage" -> {
-                    AppsOnAirUser.setLanguage(call.argument<String>("code") ?: "")
+                    PushUser.setLanguage(call.argument<String>("code") ?: "")
                     result.success(null)
                 }
-                "user#getLanguage" -> result.success(AppsOnAirUser.language)
+                "user#getLanguage" -> result.success(PushUser.language)
                 "user#addAlias" -> {
-                    AppsOnAirUser.addAlias(
+                    PushUser.addAlias(
                         call.argument<String>("label") ?: "",
                         call.argument<String>("id") ?: ""
                     )
@@ -217,33 +217,33 @@ class AppsonairFlutterPushNotificationPlugin :
                 "user#addAliases" -> {
                     @Suppress("UNCHECKED_CAST")
                     val aliases = call.argument<Map<String, String>>("aliases") ?: emptyMap()
-                    AppsOnAirUser.addAliases(aliases)
+                    PushUser.addAliases(aliases)
                     result.success(null)
                 }
                 "user#removeAlias" -> {
-                    AppsOnAirUser.removeAlias(call.argument<String>("label") ?: "")
+                    PushUser.removeAlias(call.argument<String>("label") ?: "")
                     result.success(null)
                 }
                 "user#removeAliases" -> {
                     @Suppress("UNCHECKED_CAST")
                     val labels = call.argument<List<String>>("labels") ?: emptyList()
-                    AppsOnAirUser.removeAliases(labels)
+                    PushUser.removeAliases(labels)
                     result.success(null)
                 }
                 "user#addEmail" -> {
-                    AppsOnAirUser.addEmail(call.argument<String>("address") ?: "")
+                    PushUser.addEmail(call.argument<String>("address") ?: "")
                     result.success(null)
                 }
                 "user#removeEmail" -> {
-                    AppsOnAirUser.removeEmail(call.argument<String>("address") ?: "")
+                    PushUser.removeEmail(call.argument<String>("address") ?: "")
                     result.success(null)
                 }
 
                 // ── Notifications namespace ─────────────────────────────
                 "notifications#permission" ->
-                    result.success(AppsOnAirNotificationsNS.permission(applicationContext))
+                    result.success(PushNotifications.permission(applicationContext))
                 "notifications#canRequestPermission" ->
-                    result.success(AppsOnAirNotificationsNS.canRequestPermission(applicationContext))
+                    result.success(PushNotifications.canRequestPermission(applicationContext))
                 "notifications#requestPermission" -> {
                     val currentActivity = activity
                     if (currentActivity == null) {
@@ -251,23 +251,23 @@ class AppsonairFlutterPushNotificationPlugin :
                         return
                     }
                     val fallbackToSettings = call.argument<Boolean>("fallbackToSettings") ?: false
-                    AppsOnAirNotificationsNS.requestPermission(currentActivity, fallbackToSettings)
+                    PushNotifications.requestPermission(currentActivity, fallbackToSettings)
                     result.success(null)
                 }
                 "notifications#registerForProvisionalAuthorization" -> result.success(null) // iOS-only
                 "notifications#clearAll" -> {
-                    AppsOnAirNotificationsNS.clearAllNotifications(applicationContext)
+                    PushNotifications.clearAllNotifications(applicationContext)
                     result.success(null)
                 }
                 "notifications#removeNotification" -> {
                     val id = call.argument<String>("id")
                     if (id != null) {
-                        AppsOnAirNotificationsNS.removeNotification(applicationContext, id)
+                        PushNotifications.removeNotification(applicationContext, id)
                     }
                     result.success(null)
                 }
                 "notifications#removeGroupedNotifications" -> {
-                    AppsOnAirNotificationsNS.removeGroupedNotifications(
+                    PushNotifications.removeGroupedNotifications(
                         applicationContext,
                         call.argument<String>("groupKey") ?: ""
                     )
@@ -286,12 +286,12 @@ class AppsonairFlutterPushNotificationPlugin :
                 // ── Debug namespace ─────────────────────────────────────
                 "debug#setLogLevel" -> {
                     val level = call.argument<String>("level") ?: "none"
-                    AppsOnAirPush.Debug.logLevel = LogLevel.entries.firstOrNull {
+                    AppPushService.Debug.logLevel = LogLevel.entries.firstOrNull {
                         it.name.equals(level, ignoreCase = true)
                     } ?: LogLevel.NONE
                     result.success(null)
                 }
-                "debug#getLogLevel" -> result.success(AppsOnAirPush.Debug.logLevel.name.lowercase())
+                "debug#getLogLevel" -> result.success(AppPushService.Debug.logLevel.name.lowercase())
 
                 else -> result.notImplemented()
             }

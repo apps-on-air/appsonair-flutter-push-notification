@@ -18,7 +18,7 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        // AppsOnAir Core, a transitive dependency of com.appsonair:push, is published on JitPack.
+        // AppsOnAir Core, a transitive dependency of the native push SDK, is published on JitPack.
         maven("https://jitpack.io")
     }
 }
@@ -49,8 +49,8 @@ android {
     }
 
     defaultConfig {
-        // Matches the native AppsOnAir-Android-Push SDK's floor (Play Store minimum as of 2024).
-        minSdk = 23
+        // Matches the native AppPushService SDK's floor — it requires AppsOnAir Core (minSdk 24).
+        minSdk = 24
     }
 }
 
@@ -60,5 +60,5 @@ dependencies {
     // GeneratedPluginRegistrant needs those types on its own compile classpath.
     // Published on JitPack — the consuming app's settings.gradle.kts / build.gradle.kts
     // must declare maven("https://jitpack.io") (see this plugin's README).
-    api("com.github.apps-on-air:appsonair-android-push-notification:0.0.1-alpha")
+    api("com.github.apps-on-air:appsonair-android-push-notification:0.0.2-alpha")
 }

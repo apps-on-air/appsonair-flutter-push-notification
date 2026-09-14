@@ -4,7 +4,7 @@ import 'models.dart';
 /// `AppsOnAirUserManager.pushSubscription` — opt-in/opt-out and the device's
 /// current push token.
 class AppsOnAirPushSubscription {
-  /// Not for public use — access via `AppsOnAirPush.User.pushSubscription`.
+  /// Not for public use — access via `AppPushService.User.pushSubscription`.
   AppsOnAirPushSubscription(this._platform);
 
   final AppsonairFlutterPushNotificationPlatform _platform;
@@ -39,9 +39,9 @@ class AppsOnAirPushSubscription {
   }
 }
 
-/// `AppsOnAirPush.User` — identity, tags, aliases, email, language.
+/// `AppPushService.User` — identity, tags, aliases, email, language.
 class AppsOnAirUserManager {
-  /// Not for public use — access via `AppsOnAirPush.User`.
+  /// Not for public use — access via `AppPushService.User`.
   AppsOnAirUserManager(this._platform)
     : pushSubscription = AppsOnAirPushSubscription(_platform);
 
@@ -54,7 +54,7 @@ class AppsOnAirUserManager {
   /// The AppsOnAir-assigned device ID.
   Future<String?> get appsonairId => _platform.getDeviceId();
 
-  /// Set by `AppsOnAirPush.login`, `null` when anonymous.
+  /// Set by `AppPushService.login`, `null` when anonymous.
   Future<String?> get externalId => _platform.userGetExternalId();
 
   /// Adds or updates a single key/value tag for audience segmentation.

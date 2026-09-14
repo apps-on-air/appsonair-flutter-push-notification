@@ -4,7 +4,7 @@ library;
 /// SDK error codes. Not every code is possible on every platform — see the
 /// doc comment on each value.
 enum PushErrorCode {
-  /// [AppsOnAirPush.initialize] was not called before an API that requires it.
+  /// [AppPushService.initialize] was not called before an API that requires it.
   notInitialized,
 
   /// The user denied (or the OS blocked) the notification permission request.
@@ -42,7 +42,7 @@ enum PushErrorCode {
   }
 }
 
-/// An SDK error reported via `AppsOnAirPush.addErrorListener`.
+/// An SDK error reported via `AppPushService.addErrorListener`.
 class PushError {
   /// Creates a push error with the given [code] and [message].
   const PushError({required this.code, required this.message});
@@ -234,7 +234,7 @@ class PushSubscriptionChangedState {
   final PushSubscriptionState current;
 }
 
-/// Delivered to user-state observers after [AppsOnAirPush.login]/`.logout()`.
+/// Delivered to user-state observers after [AppPushService.login]/`.logout()`.
 class UserChangedState {
   /// Creates a user-state change from its individual fields.
   const UserChangedState({required this.externalId, required this.appsonairId});
@@ -247,19 +247,19 @@ class UserChangedState {
     );
   }
 
-  /// The external identifier set by `AppsOnAirPush.login`, `null` when anonymous.
+  /// The external identifier set by `AppPushService.login`, `null` when anonymous.
   final String? externalId;
 
   /// The AppsOnAir-assigned device ID.
   final String appsonairId;
 }
 
-/// Signature for `AppsOnAirPush.addTokenListener`.
+/// Signature for `AppPushService.addTokenListener`.
 typedef PushTokenListener =
     void Function(String token, String? apnsEnvironment);
 
-/// Signature for `AppsOnAirPush.addNotificationReceivedListener` and
-/// `AppsOnAirPush.addNotificationOpenedListener`.
+/// Signature for `AppPushService.addNotificationReceivedListener` and
+/// `AppPushService.addNotificationOpenedListener`.
 typedef PushNotificationListener = void Function(PushNotification notification);
 
 /// Signature for `AppsOnAirNotificationsManager.addForegroundWillDisplayListener`.
@@ -279,5 +279,5 @@ typedef PushSubscriptionListener =
 /// Signature for `AppsOnAirUserManager.addObserver`.
 typedef UserStateListener = void Function(UserChangedState state);
 
-/// Signature for `AppsOnAirPush.addErrorListener`.
+/// Signature for `AppPushService.addErrorListener`.
 typedef PushErrorListener = void Function(PushError error);

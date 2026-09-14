@@ -1,9 +1,9 @@
 import '../appsonair_flutter_push_notification_platform_interface.dart';
 import 'models.dart';
 
-/// `AppsOnAirPush.Debug` — logging configuration.
+/// `AppPushService.Debug` — logging configuration.
 class AppsOnAirDebugManager {
-  /// Not for public use — access via `AppsOnAirPush.Debug`.
+  /// Not for public use — access via `AppPushService.Debug`.
   AppsOnAirDebugManager(this._platform);
 
   final AppsonairFlutterPushNotificationPlatform _platform;

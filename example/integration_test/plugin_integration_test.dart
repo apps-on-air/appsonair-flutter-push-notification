@@ -16,11 +16,11 @@ void main() {
   testWidgets('getDeviceId returns a non-empty id after initialize', (
     WidgetTester tester,
   ) async {
-    await AppsOnAirPush.initialize(
+    await AppPushService.initialize(
       appId: 'integration-test-app-id',
       debug: true,
     );
-    final String? deviceId = await AppsOnAirPush.deviceId;
+    final String? deviceId = await AppPushService.deviceId;
     expect(deviceId?.isNotEmpty, true);
   });
 }
