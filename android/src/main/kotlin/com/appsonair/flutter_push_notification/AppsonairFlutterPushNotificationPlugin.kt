@@ -404,6 +404,7 @@ class AppsonairFlutterPushNotificationPlugin :
         PushError.Code.PERMISSION_DENIED -> "permissionDenied"
         PushError.Code.TOKEN_FETCH_FAILED -> "tokenFetchFailed"
         PushError.Code.INSTALLATION_ID_FETCH_FAILED -> "installationIdFetchFailed"
+        PushError.Code.FIREBASE_NOT_CONFIGURED -> "firebaseNotConfigured"
         PushError.Code.UNKNOWN -> "unknown"
     }
 }

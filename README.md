@@ -78,8 +78,8 @@ notifications don't fall back to your launcher icon):
 </application>
 ```
 
-Add below code to `settings.gradle.kts` (needed to resolve the native SDK's own dependency,
-AppsOnAir Core, from JitPack):
+Add below code to `settings.gradle.kts` (needed to resolve the native Push SDK, and its own
+dependency AppsOnAir Core, from JitPack):
 
 ```kotlin
 pluginManagement {

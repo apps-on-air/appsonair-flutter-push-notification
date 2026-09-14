@@ -58,5 +58,7 @@ dependencies {
     // `api`, not `implementation` — this plugin's public class implements native
     // interfaces (PushListener, INotificationClickListener, ...), so consuming apps'
     // GeneratedPluginRegistrant needs those types on its own compile classpath.
-    api("com.appsonair:push:0.0.1-alpha")
+    // Published on JitPack — the consuming app's settings.gradle.kts / build.gradle.kts
+    // must declare maven("https://jitpack.io") (see this plugin's README).
+    api("com.github.apps-on-air:appsonair-android-push-notification:0.0.1-alpha")
 }
