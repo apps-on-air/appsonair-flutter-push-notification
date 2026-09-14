@@ -10,17 +10,17 @@ void main() {
   setUp(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(platform.methodChannel, (
-          MethodCall methodCall,
-        ) async {
-          switch (methodCall.method) {
-            case 'getDeviceId':
-              return 'test-device-id';
-            case 'isPermissionGranted':
-              return true;
-            default:
-              return null;
-          }
-        });
+      MethodCall methodCall,
+    ) async {
+      switch (methodCall.method) {
+        case 'getDeviceId':
+          return 'test-device-id';
+        case 'isPermissionGranted':
+          return true;
+        default:
+          return null;
+      }
+    });
   });
 
   tearDown(() {

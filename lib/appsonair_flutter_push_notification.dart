@@ -181,7 +181,8 @@ class AppPushService {
   /// Removes a listener added with [addNotificationReceivedListener].
   static void removeNotificationReceivedListener(
     PushNotificationListener listener,
-  ) => _receivedListeners.remove(listener);
+  ) =>
+      _receivedListeners.remove(listener);
 
   /// Fires when the user taps a notification (cold start, background, or foreground).
   static void addNotificationOpenedListener(PushNotificationListener listener) {
@@ -192,7 +193,8 @@ class AppPushService {
   /// Removes a listener added with [addNotificationOpenedListener].
   static void removeNotificationOpenedListener(
     PushNotificationListener listener,
-  ) => _openedListeners.remove(listener);
+  ) =>
+      _openedListeners.remove(listener);
 
   /// Fires when the SDK reports an error — see [PushErrorCode] for the possible codes.
   static void addErrorListener(PushErrorListener listener) {

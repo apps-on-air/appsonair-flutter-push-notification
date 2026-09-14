@@ -255,16 +255,16 @@ class UserChangedState {
 }
 
 /// Signature for `AppPushService.addTokenListener`.
-typedef PushTokenListener =
-    void Function(String token, String? apnsEnvironment);
+typedef PushTokenListener = void Function(
+    String token, String? apnsEnvironment);
 
 /// Signature for `AppPushService.addNotificationReceivedListener` and
 /// `AppPushService.addNotificationOpenedListener`.
 typedef PushNotificationListener = void Function(PushNotification notification);
 
 /// Signature for `AppsOnAirNotificationsManager.addForegroundWillDisplayListener`.
-typedef NotificationWillDisplayListener =
-    void Function(NotificationWillDisplayEvent event);
+typedef NotificationWillDisplayListener = void Function(
+    NotificationWillDisplayEvent event);
 
 /// Signature for `AppsOnAirNotificationsManager.addClickListener`.
 typedef NotificationClickListener = void Function(NotificationClickEvent event);
@@ -273,8 +273,8 @@ typedef NotificationClickListener = void Function(NotificationClickEvent event);
 typedef NotificationPermissionListener = void Function(bool granted);
 
 /// Signature for `AppsOnAirPushSubscription.addObserver`.
-typedef PushSubscriptionListener =
-    void Function(PushSubscriptionChangedState state);
+typedef PushSubscriptionListener = void Function(
+    PushSubscriptionChangedState state);
 
 /// Signature for `AppsOnAirUserManager.addObserver`.
 typedef UserStateListener = void Function(UserChangedState state);
