@@ -22,6 +22,8 @@ enum PushErrorCode {
   /// Any other/unrecognized native error code.
   unknown;
 
+  /// Parses the wire-format string sent by the native side, falling back to
+  /// [unknown] for anything unrecognized.
   static PushErrorCode fromWire(String? value) {
     switch (value) {
       case 'notInitialized':
@@ -40,30 +42,49 @@ enum PushErrorCode {
   }
 }
 
-/// An SDK error reported via [AppsOnAirPush.setErrorListener]-style
-/// [AppsOnAirNotificationsManager]/[AppsOnAirPush] error stream.
+/// An SDK error reported via `AppsOnAirPush.addErrorListener`.
 class PushError {
+  /// Creates a push error with the given [code] and [message].
   const PushError({required this.code, required this.message});
 
+  /// The error's category — see [PushErrorCode].
   final PushErrorCode code;
+
+  /// A human-readable description of the error.
   final String message;
 
   @override
   String toString() => 'PushError($code, $message)';
 }
 
-/// Logging verbosity for [AppsOnAirDebugManager.logLevel].
+/// Logging verbosity for `AppsOnAirDebugManager.logLevel`.
 enum LogLevel {
+  /// No logging. The default, and recommended for production.
   none,
+
+  /// Only fatal errors.
   fatal,
+
+  /// Errors and above.
   error,
+
+  /// Warnings and above.
   warn,
+
+  /// Informational messages and above.
   info,
+
+  /// Debug messages and above.
   debug,
+
+  /// Every log message. Recommended during development only.
   verbose;
 
+  /// The wire-format string sent to the native side.
   String get wireValue => name;
 
+  /// Parses the wire-format string sent by the native side, falling back to
+  /// [none] for anything unrecognized.
   static LogLevel fromWire(String? value) {
     return LogLevel.values.firstWhere(
       (l) => l.name == value,
@@ -78,6 +99,7 @@ enum LogLevel {
 /// [String] (FCM data payloads are string-only); on iOS values keep their
 /// original APNs payload types.
 class PushNotification {
+  /// Creates a push notification from its individual fields.
   const PushNotification({
     required this.id,
     required this.title,
@@ -85,6 +107,7 @@ class PushNotification {
     required this.data,
   });
 
+  /// Parses a push notification from the raw map sent by the native side.
   factory PushNotification.fromMap(Map<Object?, Object?> map) {
     final rawData = map['data'];
     return PushNotification(
@@ -99,8 +122,14 @@ class PushNotification {
 
   /// Value of `notification_id` from the push payload. Null if not present.
   final String? id;
+
+  /// Pre-translated notification title, if present.
   final String? title;
+
+  /// Pre-translated notification body, if present.
   final String? body;
+
+  /// The full payload map.
   final Map<String, dynamic> data;
 
   @override
@@ -118,6 +147,7 @@ class NotificationWillDisplayEvent {
     this._complete,
   );
 
+  /// The notification about to be displayed.
   final PushNotification notification;
   final String _eventId;
   final void Function(String eventId, bool discard) _complete;
@@ -133,11 +163,13 @@ class NotificationWillDisplayEvent {
 
 /// Fired when the user taps a notification or one of its action buttons.
 class NotificationClickEvent {
+  /// Creates a click event from its individual fields.
   const NotificationClickEvent({
     required this.notification,
     required this.actionId,
   });
 
+  /// Parses a click event from the raw map sent by the native side.
   factory NotificationClickEvent.fromMap(Map<Object?, Object?> map) {
     return NotificationClickEvent(
       notification: PushNotification.fromMap(
@@ -147,6 +179,7 @@ class NotificationClickEvent {
     );
   }
 
+  /// The notification that was tapped.
   final PushNotification notification;
 
   /// Null when the notification body was tapped; non-null for a specific
@@ -156,8 +189,10 @@ class NotificationClickEvent {
 
 /// Snapshot of the device's push subscription state.
 class PushSubscriptionState {
+  /// Creates a subscription state snapshot from its individual fields.
   const PushSubscriptionState({required this.token, required this.isOptedIn});
 
+  /// Parses a subscription state snapshot from the raw map sent by the native side.
   factory PushSubscriptionState.fromMap(Map<Object?, Object?> map) {
     return PushSubscriptionState(
       token: map['token'] as String?,
@@ -167,16 +202,20 @@ class PushSubscriptionState {
 
   /// FCM token (Android) or hex APNs token (iOS). Null until registered.
   final String? token;
+
+  /// Whether the device is currently opted in to receive pushes.
   final bool isOptedIn;
 }
 
 /// Before/after pair delivered to push-subscription observers.
 class PushSubscriptionChangedState {
+  /// Creates a before/after pair from its individual fields.
   const PushSubscriptionChangedState({
     required this.previous,
     required this.current,
   });
 
+  /// Parses a before/after pair from the raw map sent by the native side.
   factory PushSubscriptionChangedState.fromMap(Map<Object?, Object?> map) {
     return PushSubscriptionChangedState(
       previous: PushSubscriptionState.fromMap(
@@ -188,14 +227,19 @@ class PushSubscriptionChangedState {
     );
   }
 
+  /// The subscription state before the change.
   final PushSubscriptionState previous;
+
+  /// The subscription state after the change.
   final PushSubscriptionState current;
 }
 
 /// Delivered to user-state observers after [AppsOnAirPush.login]/`.logout()`.
 class UserChangedState {
+  /// Creates a user-state change from its individual fields.
   const UserChangedState({required this.externalId, required this.appsonairId});
 
+  /// Parses a user-state change from the raw map sent by the native side.
   factory UserChangedState.fromMap(Map<Object?, Object?> map) {
     return UserChangedState(
       externalId: map['externalId'] as String?,
@@ -203,20 +247,37 @@ class UserChangedState {
     );
   }
 
+  /// The external identifier set by `AppsOnAirPush.login`, `null` when anonymous.
   final String? externalId;
 
   /// The AppsOnAir-assigned device ID.
   final String appsonairId;
 }
 
+/// Signature for `AppsOnAirPush.addTokenListener`.
 typedef PushTokenListener =
     void Function(String token, String? apnsEnvironment);
+
+/// Signature for `AppsOnAirPush.addNotificationReceivedListener` and
+/// `AppsOnAirPush.addNotificationOpenedListener`.
 typedef PushNotificationListener = void Function(PushNotification notification);
+
+/// Signature for `AppsOnAirNotificationsManager.addForegroundWillDisplayListener`.
 typedef NotificationWillDisplayListener =
     void Function(NotificationWillDisplayEvent event);
+
+/// Signature for `AppsOnAirNotificationsManager.addClickListener`.
 typedef NotificationClickListener = void Function(NotificationClickEvent event);
+
+/// Signature for `AppsOnAirNotificationsManager.addPermissionObserver`.
 typedef NotificationPermissionListener = void Function(bool granted);
+
+/// Signature for `AppsOnAirPushSubscription.addObserver`.
 typedef PushSubscriptionListener =
     void Function(PushSubscriptionChangedState state);
+
+/// Signature for `AppsOnAirUserManager.addObserver`.
 typedef UserStateListener = void Function(UserChangedState state);
+
+/// Signature for `AppsOnAirPush.addErrorListener`.
 typedef PushErrorListener = void Function(PushError error);

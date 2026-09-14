@@ -6,11 +6,13 @@ import 'appsonair_flutter_push_notification_platform_interface.dart';
 /// Method-channel implementation of [AppsonairFlutterPushNotificationPlatform].
 class MethodChannelAppsonairFlutterPushNotification
     extends AppsonairFlutterPushNotificationPlatform {
+  /// The method channel used to invoke request/response calls on the native side.
   @visibleForTesting
   final methodChannel = const MethodChannel(
     'appsonair_flutter_push_notification/methods',
   );
 
+  /// The event channel used to receive the [eventStream] broadcast from the native side.
   @visibleForTesting
   final eventChannel = const EventChannel(
     'appsonair_flutter_push_notification/events',

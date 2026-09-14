@@ -15,15 +15,24 @@ export 'src/notifications_manager.dart';
 export 'src/user_manager.dart'
     show AppsOnAirPushSubscription, AppsOnAirUserManager;
 
+/// Entry point for the AppsOnAir push notification SDK.
+///
+/// Call [initialize] once, as early as possible, then use [User],
+/// [Notifications], and [Debug] for the rest of the API.
 class AppsOnAirPush {
   AppsOnAirPush._();
 
   static AppsonairFlutterPushNotificationPlatform get _platform =>
       AppsonairFlutterPushNotificationPlatform.instance;
 
+  /// Identity, tags, aliases, email, language, and push-subscription state.
   static final AppsOnAirUserManager User = AppsOnAirUserManager(_platform);
+
+  /// Permission, foreground display, taps, and delivered-notification management.
   static final AppsOnAirNotificationsManager Notifications =
       AppsOnAirNotificationsManager(_platform);
+
+  /// Logging configuration.
   static final AppsOnAirDebugManager Debug = AppsOnAirDebugManager(_platform);
 
   static final List<PushTokenListener> _tokenListeners = [];
@@ -104,6 +113,13 @@ class AppsOnAirPush {
     }
   }
 
+  /// Initializes the SDK. Call once, before any other API, typically in
+  /// `main()` or your root widget's `initState`.
+  ///
+  /// [appId] is optional and kept only for source compatibility — the app ID
+  /// is read from the `AppsonairAppId` manifest meta-data (Android) or
+  /// Info.plist entry (iOS). [debug] is a deprecated shortcut for
+  /// `Debug.setLogLevel(LogLevel.debug)`. [swizzle] is iOS-only.
   static Future<void> initialize({
     String appId = '',
     bool debug = false,
@@ -113,20 +129,29 @@ class AppsOnAirPush {
     return _platform.initialize(appId: appId, debug: debug, swizzle: swizzle);
   }
 
+  /// Associates the device with a known user after sign-in.
   static Future<void> login(String externalId) => _platform.login(externalId);
 
+  /// Clears the current user identity, tags, and aliases — the device
+  /// reverts to anonymous.
   static Future<void> logout() => _platform.logout();
 
+  /// The AppsOnAir-assigned device ID.
   static Future<String?> get deviceId => _platform.getDeviceId();
 
+  /// Gates all data collection on explicit consent. Set before [initialize]
+  /// so it applies on the very first launch.
   static Future<void> setConsentRequired(bool value) =>
       _platform.setConsentRequired(value);
 
+  /// Records whether the user has given (`true`) or withdrawn (`false`) consent.
   static Future<void> setConsentGiven(bool value) =>
       _platform.setConsentGiven(value);
 
+  /// Whether the notification permission is currently granted.
   static Future<bool> isPermissionGranted() => _platform.isPermissionGranted();
 
+  /// Removes every notification this app has posted.
   static Future<void> clearAllNotifications() =>
       _platform.clearAllNotifications();
 
@@ -140,9 +165,12 @@ class AppsOnAirPush {
     _tokenListeners.add(listener);
   }
 
+  /// Removes a listener added with [addTokenListener].
   static void removeTokenListener(PushTokenListener listener) =>
       _tokenListeners.remove(listener);
 
+  /// Fires when a notification arrives while the app is running (foreground
+  /// or background), in addition to any system notification display.
   static void addNotificationReceivedListener(
     PushNotificationListener listener,
   ) {
@@ -150,24 +178,29 @@ class AppsOnAirPush {
     _receivedListeners.add(listener);
   }
 
+  /// Removes a listener added with [addNotificationReceivedListener].
   static void removeNotificationReceivedListener(
     PushNotificationListener listener,
   ) => _receivedListeners.remove(listener);
 
+  /// Fires when the user taps a notification (cold start, background, or foreground).
   static void addNotificationOpenedListener(PushNotificationListener listener) {
     _ensureEventBridge();
     _openedListeners.add(listener);
   }
 
+  /// Removes a listener added with [addNotificationOpenedListener].
   static void removeNotificationOpenedListener(
     PushNotificationListener listener,
   ) => _openedListeners.remove(listener);
 
+  /// Fires when the SDK reports an error — see [PushErrorCode] for the possible codes.
   static void addErrorListener(PushErrorListener listener) {
     _ensureEventBridge();
     _errorListeners.add(listener);
   }
 
+  /// Removes a listener added with [addErrorListener].
   static void removeErrorListener(PushErrorListener listener) =>
       _errorListeners.remove(listener);
 }

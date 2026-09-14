@@ -3,6 +3,7 @@ import 'models.dart';
 
 /// `AppsOnAirPush.Debug` — logging configuration.
 class AppsOnAirDebugManager {
+  /// Not for public use — access via `AppsOnAirPush.Debug`.
   AppsOnAirDebugManager(this._platform);
 
   final AppsonairFlutterPushNotificationPlatform _platform;
@@ -11,6 +12,7 @@ class AppsOnAirDebugManager {
   Future<void> setLogLevel(LogLevel level) =>
       _platform.setLogLevel(level.wireValue);
 
+  /// The SDK's current logging verbosity.
   Future<LogLevel> get logLevel async =>
       LogLevel.fromWire(await _platform.getLogLevel());
 }

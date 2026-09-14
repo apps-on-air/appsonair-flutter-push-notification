@@ -1,7 +1,10 @@
 import '../appsonair_flutter_push_notification_platform_interface.dart';
 import 'models.dart';
 
+/// `AppsOnAirPush.Notifications` — permission, foreground display, taps, and
+/// delivered-notification management.
 class AppsOnAirNotificationsManager {
+  /// Not for public use — access via `AppsOnAirPush.Notifications`.
   AppsOnAirNotificationsManager(this._platform);
 
   final AppsonairFlutterPushNotificationPlatform _platform;
@@ -33,10 +36,12 @@ class AppsOnAirNotificationsManager {
     return _platform.registerForProvisionalAuthorization();
   }
 
+  /// Observe changes to the notification permission.
   void addPermissionObserver(NotificationPermissionListener observer) {
     _permissionObservers.add(observer);
   }
 
+  /// Removes an observer added with [addPermissionObserver].
   void removePermissionObserver(NotificationPermissionListener observer) {
     _permissionObservers.remove(observer);
   }
@@ -50,6 +55,7 @@ class AppsOnAirNotificationsManager {
     _foregroundListeners.add(listener);
   }
 
+  /// Removes a listener added with [addForegroundWillDisplayListener].
   void removeForegroundWillDisplayListener(
     NotificationWillDisplayListener listener,
   ) {
@@ -62,6 +68,7 @@ class AppsOnAirNotificationsManager {
     _clickListeners.add(listener);
   }
 
+  /// Removes a listener added with [addClickListener].
   void removeClickListener(NotificationClickListener listener) {
     _clickListeners.remove(listener);
   }
@@ -82,18 +89,24 @@ class AppsOnAirNotificationsManager {
     return _platform.removeGroupedNotifications(groupKey);
   }
 
+  /// Not for public use — invoked internally to fan out a native permission
+  /// change to registered observers.
   void dispatchPermissionChange(bool granted) {
     for (final observer in List.of(_permissionObservers)) {
       observer(granted);
     }
   }
 
+  /// Not for public use — invoked internally to fan out a native click event
+  /// to registered listeners.
   void dispatchClick(NotificationClickEvent event) {
     for (final listener in List.of(_clickListeners)) {
       listener(event);
     }
   }
 
+  /// Not for public use — invoked internally to fan out a native
+  /// will-display event to registered listeners.
   void dispatchWillDisplay(NotificationWillDisplayEvent event) {
     for (final listener in List.of(_foregroundListeners)) {
       listener(event);
