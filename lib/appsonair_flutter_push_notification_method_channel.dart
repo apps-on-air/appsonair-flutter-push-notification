@@ -23,8 +23,8 @@ class MethodChannelAppsonairFlutterPushNotification
   @override
   Stream<Map<Object?, Object?>> get eventStream {
     return _eventStream ??= eventChannel.receiveBroadcastStream().map(
-      (event) => (event as Map).cast<Object?, Object?>(),
-    );
+          (event) => (event as Map).cast<Object?, Object?>(),
+        );
   }
 
   Future<T> _invoke<T>(String method, [Map<String, dynamic>? args]) async {

@@ -43,7 +43,7 @@ class AppsOnAirPushSubscription {
 class AppsOnAirUserManager {
   /// Not for public use — access via `AppPushService.User`.
   AppsOnAirUserManager(this._platform)
-    : pushSubscription = AppsOnAirPushSubscription(_platform);
+      : pushSubscription = AppsOnAirPushSubscription(_platform);
 
   final AppsonairFlutterPushNotificationPlatform _platform;
   final List<UserStateListener> _observers = [];
