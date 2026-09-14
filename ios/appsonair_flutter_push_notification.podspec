@@ -15,11 +15,6 @@ Flutter plugin wrapping the native AppsOnAir push notification SDKs (Android/iOS
   s.source           = { :path => '.' }
   s.source_files = 'appsonair_flutter_push_notification/Sources/appsonair_flutter_push_notification/**/*'
   s.dependency 'Flutter'
-  # Not resolvable from a public spec repo — AppsOnAir-AppPush's own podspec still
-  # declares `s.source = { :path => '.' }` as of 0.0.2-alpha (not yet switched to a
-  # git source), so CocoaPods can't fetch it from a bare version constraint either.
-  # For CocoaPods-based consumers, add an override to your app's Podfile:
-  #   pod 'AppsOnAir-AppPush', :git => 'https://github.com/apps-on-air/appsonair-ios-push-notification.git', :tag => '0.0.2-alpha'
   s.dependency 'AppsOnAir-AppPush', '0.0.2-alpha'
   s.platform = :ios, '15.0'
 
