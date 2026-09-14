@@ -1,4 +1,4 @@
-group = "com.appsonair.flutter_push_notification"
+group = "com.logicwind.appsonair_flutter_push_notification"
 version = "1.0-SNAPSHOT"
 
 buildscript {
@@ -29,7 +29,7 @@ plugins {
 }
 
 android {
-    namespace = "com.appsonair.flutter_push_notification"
+    namespace = "com.logicwind.appsonair_flutter_push_notification"
 
     compileSdk = 36
 

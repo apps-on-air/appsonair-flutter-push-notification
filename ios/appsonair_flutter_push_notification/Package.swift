@@ -1,10 +1,3 @@
-// swift-tools-version: 5.9
-// The swift-tools-version declares the minimum version of Swift required to build this package.
-// Deliberately kept at 5.9 (Swift 5 language mode) rather than matching the native
-// SDK's 6.2 — Swift 6's strict concurrency mode flags this plugin's @MainActor class
-// conforming to Flutter's (non-isolated) FlutterPlugin/FlutterStreamHandler protocols
-// as a hard error. Each package in the dependency graph builds under its own
-// language mode, so this doesn't affect the native SDK's own build.
 
 import PackageDescription
 

@@ -36,7 +36,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.appsonair.flutter_push_notification
+        package: com.logicwind.appsonair_flutter_push_notification
         pluginClass: AppsonairFlutterPushNotificationPlugin
       ios:
         pluginClass: AppsonairFlutterPushNotificationPlugin

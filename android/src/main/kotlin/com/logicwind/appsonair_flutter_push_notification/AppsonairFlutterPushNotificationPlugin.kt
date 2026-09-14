@@ -1,4 +1,4 @@
-package com.appsonair.flutter_push_notification
+package com.logicwind.appsonair_flutter_push_notification
 
 import android.app.Activity
 import android.content.Context
