@@ -17,6 +17,13 @@ one Dart API.
 >
 > Pin this exact version rather than a version range, and re-test on every upgrade.
 
+> [!NOTE]
+> **Deprecation notice.**
+>
+> This package will be deprecated and discontinued in favor of the new
+> [`appsonair_flutter_apppush`](https://pub.dev/packages/appsonair_flutter_apppush) package.
+> Migration guidance will be shared ahead of the transition.
+
 ## Features Overview
 
 - Push Token 📮
