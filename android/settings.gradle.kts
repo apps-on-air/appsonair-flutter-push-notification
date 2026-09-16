@@ -1,1 +1,1 @@
-rootProject.name = 'appsonair_flutter_push_notification'
+rootProject.name = 'appsonair_flutter_apppush'

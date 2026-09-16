@@ -1,32 +1,32 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-import 'appsonair_flutter_push_notification_method_channel.dart';
+import 'appsonair_flutter_apppush_method_channel.dart';
 
 /// The interface that platform-specific implementations of this plugin must
 /// implement.
 ///
 /// App developers should use the public `AppPushService` API instead of this
 /// class directly; it exists so the plugin can be backed by a method-channel
-/// implementation (the default, [MethodChannelAppsonairFlutterPushNotification])
+/// implementation (the default, [MethodChannelAppsonairFlutterAppPush])
 /// or a different implementation for testing.
-abstract class AppsonairFlutterPushNotificationPlatform
+abstract class AppsonairFlutterAppPushPlatform
     extends PlatformInterface {
   /// Constructs a platform interface instance, verified via [PlatformInterface.verifyToken].
-  AppsonairFlutterPushNotificationPlatform() : super(token: _token);
+  AppsonairFlutterAppPushPlatform() : super(token: _token);
 
   static final Object _token = Object();
 
-  static AppsonairFlutterPushNotificationPlatform _instance =
-      MethodChannelAppsonairFlutterPushNotification();
+  static AppsonairFlutterAppPushPlatform _instance =
+      MethodChannelAppsonairFlutterAppPush();
 
-  /// The default instance of [AppsonairFlutterPushNotificationPlatform] used
-  /// by the plugin. Defaults to [MethodChannelAppsonairFlutterPushNotification].
-  static AppsonairFlutterPushNotificationPlatform get instance => _instance;
+  /// The default instance of [AppsonairFlutterAppPushPlatform] used
+  /// by the plugin. Defaults to [MethodChannelAppsonairFlutterAppPush].
+  static AppsonairFlutterAppPushPlatform get instance => _instance;
 
   /// Overrides the default instance, for platform-specific or test
   /// implementations. Verified against [_token] so only genuine
-  /// [AppsonairFlutterPushNotificationPlatform] subclasses may be installed.
-  static set instance(AppsonairFlutterPushNotificationPlatform instance) {
+  /// [AppsonairFlutterAppPushPlatform] subclasses may be installed.
+  static set instance(AppsonairFlutterAppPushPlatform instance) {
     PlatformInterface.verifyToken(instance, _token);
     _instance = instance;
   }

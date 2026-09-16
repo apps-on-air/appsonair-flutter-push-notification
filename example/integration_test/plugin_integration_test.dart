@@ -6,7 +6,7 @@
 // For more information about Flutter integration tests, please see
 // https://flutter.dev/to/integration-testing
 
-import 'package:appsonair_flutter_push_notification/appsonair_flutter_push_notification.dart';
+import 'package:appsonair_flutter_apppush/appsonair_flutter_apppush.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 

@@ -1,6 +1,6 @@
-# appsonair_flutter_push_notification_example
+# appsonair_flutter_apppush_example
 
-Demonstrates how to use the appsonair_flutter_push_notification plugin.
+Demonstrates how to use the appsonair_flutter_apppush plugin.
 
 ## Getting Started
 

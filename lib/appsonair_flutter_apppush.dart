@@ -3,7 +3,7 @@ library;
 
 import 'dart:async';
 
-import 'appsonair_flutter_push_notification_platform_interface.dart';
+import 'appsonair_flutter_apppush_platform_interface.dart';
 import 'src/debug_manager.dart';
 import 'src/models.dart';
 import 'src/notifications_manager.dart';
@@ -22,8 +22,8 @@ export 'src/user_manager.dart'
 class AppPushService {
   AppPushService._();
 
-  static AppsonairFlutterPushNotificationPlatform get _platform =>
-      AppsonairFlutterPushNotificationPlatform.instance;
+  static AppsonairFlutterAppPushPlatform get _platform =>
+      AppsonairFlutterAppPushPlatform.instance;
 
   /// Identity, tags, aliases, email, language, and push-subscription state.
   static final AppsOnAirUserManager User = AppsOnAirUserManager(_platform);

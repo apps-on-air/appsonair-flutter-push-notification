@@ -1,4 +1,4 @@
-package com.logicwind.appsonair_flutter_push_notification
+package com.logicwind.appsonair_flutter_apppush
 
 import android.app.Activity
 import android.content.Context
@@ -31,8 +31,8 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import java.util.UUID
 
-/** AppsonairFlutterPushNotificationPlugin */
-class AppsonairFlutterPushNotificationPlugin :
+/** AppsonairFlutterAppPushPlugin */
+class AppsonairFlutterAppPushPlugin :
     FlutterPlugin,
     ActivityAware,
     MethodCallHandler,
@@ -72,12 +72,12 @@ class AppsonairFlutterPushNotificationPlugin :
         applicationContext = flutterPluginBinding.applicationContext
         channel = MethodChannel(
             flutterPluginBinding.binaryMessenger,
-            "appsonair_flutter_push_notification/methods"
+            "appsonair_flutter_apppush/methods"
         )
         channel.setMethodCallHandler(this)
         eventChannel = EventChannel(
             flutterPluginBinding.binaryMessenger,
-            "appsonair_flutter_push_notification/events"
+            "appsonair_flutter_apppush/events"
         )
         eventChannel.setStreamHandler(this)
 

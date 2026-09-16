@@ -1,11 +1,11 @@
-import 'package:appsonair_flutter_push_notification/appsonair_flutter_push_notification_method_channel.dart';
+import 'package:appsonair_flutter_apppush/appsonair_flutter_apppush_method_channel.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  final platform = MethodChannelAppsonairFlutterPushNotification();
+  final platform = MethodChannelAppsonairFlutterAppPush();
 
   setUp(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger

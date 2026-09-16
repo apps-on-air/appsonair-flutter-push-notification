@@ -1,4 +1,4 @@
-# AppsOnAir-Flutter-PushNotification
+# AppsOnAir-Flutter-AppPush
 
 A Flutter plugin wrapping the native AppsOnAir Push Notification SDKs (Android/iOS) — device
 registration, rich notifications, taps/actions, tags, aliases, opt-in/opt-out, and more, behind
@@ -222,7 +222,7 @@ Initialize the SDK once, as early as possible. Call `runApp` **before** `initial
 a white screen if the channel is not ready yet:
 
 ```dart
-import 'package:appsonair_flutter_push_notification/appsonair_flutter_push_notification.dart';
+import 'package:appsonair_flutter_apppush/appsonair_flutter_apppush.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
