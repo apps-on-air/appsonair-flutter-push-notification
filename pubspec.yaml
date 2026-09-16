@@ -1,6 +1,6 @@
-name: appsonair_flutter_push_notification
+name: appsonair_flutter_apppush
 description: "Flutter plugin for the AppsOnAir Push Notification service (Android/iOS)."
-version: 0.0.2-alpha
+version: 0.0.1-alpha
 homepage: https://appsonair.com
 repository: https://github.com/apps-on-air/appsonair-flutter-push-notification
 
@@ -32,10 +32,10 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.logicwind.appsonair_flutter_push_notification
-        pluginClass: AppsonairFlutterPushNotificationPlugin
+        package: com.logicwind.appsonair_flutter_apppush
+        pluginClass: AppsonairFlutterAppPushPlugin
       ios:
-        pluginClass: AppsonairFlutterPushNotificationPlugin
+        pluginClass: AppsonairFlutterAppPushPlugin
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

@@ -1,21 +1,21 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-import 'appsonair_flutter_push_notification_platform_interface.dart';
+import 'appsonair_flutter_apppush_platform_interface.dart';
 
-/// Method-channel implementation of [AppsonairFlutterPushNotificationPlatform].
-class MethodChannelAppsonairFlutterPushNotification
-    extends AppsonairFlutterPushNotificationPlatform {
+/// Method-channel implementation of [AppsonairFlutterAppPushPlatform].
+class MethodChannelAppsonairFlutterAppPush
+    extends AppsonairFlutterAppPushPlatform {
   /// The method channel used to invoke request/response calls on the native side.
   @visibleForTesting
   final methodChannel = const MethodChannel(
-    'appsonair_flutter_push_notification/methods',
+    'appsonair_flutter_apppush/methods',
   );
 
   /// The event channel used to receive the [eventStream] broadcast from the native side.
   @visibleForTesting
   final eventChannel = const EventChannel(
-    'appsonair_flutter_push_notification/events',
+    'appsonair_flutter_apppush/events',
   );
 
   Stream<Map<Object?, Object?>>? _eventStream;

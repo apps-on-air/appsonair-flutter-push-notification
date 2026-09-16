@@ -1,4 +1,4 @@
-import '../appsonair_flutter_push_notification_platform_interface.dart';
+import '../appsonair_flutter_apppush_platform_interface.dart';
 import 'models.dart';
 
 /// `AppsOnAirUserManager.pushSubscription` — opt-in/opt-out and the device's
@@ -7,7 +7,7 @@ class AppsOnAirPushSubscription {
   /// Not for public use — access via `AppPushService.User.pushSubscription`.
   AppsOnAirPushSubscription(this._platform);
 
-  final AppsonairFlutterPushNotificationPlatform _platform;
+  final AppsonairFlutterAppPushPlatform _platform;
   final List<PushSubscriptionListener> _observers = [];
 
   /// Whether the device is currently opted in to receive pushes.
@@ -45,7 +45,7 @@ class AppsOnAirUserManager {
   AppsOnAirUserManager(this._platform)
       : pushSubscription = AppsOnAirPushSubscription(_platform);
 
-  final AppsonairFlutterPushNotificationPlatform _platform;
+  final AppsonairFlutterAppPushPlatform _platform;
   final List<UserStateListener> _observers = [];
 
   /// Opt-in/opt-out and the device's current push token.

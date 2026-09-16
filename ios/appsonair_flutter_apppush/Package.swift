@@ -2,12 +2,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "appsonair_flutter_push_notification",
+    name: "appsonair_flutter_apppush",
     platforms: [
         .iOS("15.0")
     ],
     products: [
-        .library(name: "appsonair-flutter-push-notification", targets: ["appsonair_flutter_push_notification"])
+        .library(name: "appsonair-flutter-apppush", targets: ["appsonair_flutter_apppush"])
     ],
     dependencies: [
         .package(
@@ -17,11 +17,11 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "appsonair_flutter_push_notification",
+            name: "appsonair_flutter_apppush",
             dependencies: [
                 .product(name: "AppsOnAir-AppPush", package: "appsonair-ios-push-notification")
             ],
-            path: "appsonair_flutter_push_notification/Sources/appsonair_flutter_push_notification",
+            path: "appsonair_flutter_apppush/Sources/appsonair_flutter_apppush",
             resources: [
                 // .process("PrivacyInfo.xcprivacy"),
             ]

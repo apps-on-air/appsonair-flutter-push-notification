@@ -1,4 +1,4 @@
-import '../appsonair_flutter_push_notification_platform_interface.dart';
+import '../appsonair_flutter_apppush_platform_interface.dart';
 import 'models.dart';
 
 /// `AppPushService.Notifications` — permission, foreground display, taps, and
@@ -7,7 +7,7 @@ class AppsOnAirNotificationsManager {
   /// Not for public use — access via `AppPushService.Notifications`.
   AppsOnAirNotificationsManager(this._platform);
 
-  final AppsonairFlutterPushNotificationPlatform _platform;
+  final AppsonairFlutterAppPushPlatform _platform;
 
   final List<NotificationPermissionListener> _permissionObservers = [];
   final List<NotificationWillDisplayListener> _foregroundListeners = [];

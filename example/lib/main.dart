@@ -1,4 +1,4 @@
-import 'package:appsonair_flutter_push_notification/appsonair_flutter_push_notification.dart';
+import 'package:appsonair_flutter_apppush/appsonair_flutter_apppush.dart';
 import 'package:flutter/material.dart';
 
 // - Android: AppsonairAppId meta-data in AndroidManifest.xml

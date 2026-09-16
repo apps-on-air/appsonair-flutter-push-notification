@@ -3,23 +3,23 @@ import Flutter
 import UIKit
 
 @MainActor
-public class AppsonairFlutterPushNotificationPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
+public class AppsonairFlutterAppPushPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
   private var eventSink: FlutterEventSink?
 
   private var pendingWillDisplayEvents: [String: NotificationWillDisplayEvent] = [:]
 
   public static func register(with registrar: FlutterPluginRegistrar) {
-    let instance = AppsonairFlutterPushNotificationPlugin()
+    let instance = AppsonairFlutterAppPushPlugin()
 
     let channel = FlutterMethodChannel(
-      name: "appsonair_flutter_push_notification/methods",
+      name: "appsonair_flutter_apppush/methods",
       binaryMessenger: registrar.messenger()
     )
     registrar.addMethodCallDelegate(instance, channel: channel)
 
     let eventChannel = FlutterEventChannel(
-      name: "appsonair_flutter_push_notification/events",
+      name: "appsonair_flutter_apppush/events",
       binaryMessenger: registrar.messenger()
     )
     eventChannel.setStreamHandler(instance)
@@ -182,7 +182,7 @@ public class AppsonairFlutterPushNotificationPlugin: NSObject, FlutterPlugin, Fl
 
 // MARK: - PushListener
 
-extension AppsonairFlutterPushNotificationPlugin: PushListener {
+extension AppsonairFlutterAppPushPlugin: PushListener {
   public func onAPNsTokenUpdated(token: String, environment: APNsEnvironment) {
     eventSink?(["type": "tokenUpdated", "token": token, "environment": environment.rawValue])
   }
@@ -202,7 +202,7 @@ extension AppsonairFlutterPushNotificationPlugin: PushListener {
 
 // MARK: - NotificationLifecycleListener
 
-extension AppsonairFlutterPushNotificationPlugin: NotificationLifecycleListener {
+extension AppsonairFlutterAppPushPlugin: NotificationLifecycleListener {
   public func onWillDisplay(event: NotificationWillDisplayEvent) {
     let eventId = UUID().uuidString
     pendingWillDisplayEvents[eventId] = event
@@ -216,7 +216,7 @@ extension AppsonairFlutterPushNotificationPlugin: NotificationLifecycleListener 
 
 // MARK: - NotificationClickListener
 
-extension AppsonairFlutterPushNotificationPlugin: NotificationClickListener {
+extension AppsonairFlutterAppPushPlugin: NotificationClickListener {
   public func onClick(event: NotificationClickEvent) {
     eventSink?([
       "type": "notificationClicked",
@@ -228,7 +228,7 @@ extension AppsonairFlutterPushNotificationPlugin: NotificationClickListener {
 
 // MARK: - NotificationPermissionObserver
 
-extension AppsonairFlutterPushNotificationPlugin: NotificationPermissionObserver {
+extension AppsonairFlutterAppPushPlugin: NotificationPermissionObserver {
   public func onNotificationPermissionDidChange(_ permission: Bool) {
     eventSink?(["type": "permissionChanged", "granted": permission])
   }
@@ -236,7 +236,7 @@ extension AppsonairFlutterPushNotificationPlugin: NotificationPermissionObserver
 
 // MARK: - PushSubscriptionObserver
 
-extension AppsonairFlutterPushNotificationPlugin: PushSubscriptionObserver {
+extension AppsonairFlutterAppPushPlugin: PushSubscriptionObserver {
   public func onPushSubscriptionDidChange(state: PushSubscriptionChangedState) {
     eventSink?([
       "type": "subscriptionChanged",
@@ -248,7 +248,7 @@ extension AppsonairFlutterPushNotificationPlugin: PushSubscriptionObserver {
 
 // MARK: - UserStateObserver
 
-extension AppsonairFlutterPushNotificationPlugin: UserStateObserver {
+extension AppsonairFlutterAppPushPlugin: UserStateObserver {
   public func onUserStateDidChange(state: UserChangedState) {
     eventSink?([
       "type": "userChanged",

@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="appsonair_flutter_push_notification_example"
+        android:label="appsonair_flutter_apppush_example"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -34,7 +34,7 @@
              TODO: Replace with your own AppsOnAir app ID. -->
         <meta-data
             android:name="AppsonairAppId"
-            android:value="poc-app" />
+            android:value="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
