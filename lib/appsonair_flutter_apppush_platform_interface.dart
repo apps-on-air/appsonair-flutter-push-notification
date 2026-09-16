@@ -9,8 +9,7 @@ import 'appsonair_flutter_apppush_method_channel.dart';
 /// class directly; it exists so the plugin can be backed by a method-channel
 /// implementation (the default, [MethodChannelAppsonairFlutterAppPush])
 /// or a different implementation for testing.
-abstract class AppsonairFlutterAppPushPlatform
-    extends PlatformInterface {
+abstract class AppsonairFlutterAppPushPlatform extends PlatformInterface {
   /// Constructs a platform interface instance, verified via [PlatformInterface.verifyToken].
   AppsonairFlutterAppPushPlatform() : super(token: _token);
 
