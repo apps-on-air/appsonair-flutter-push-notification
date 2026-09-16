@@ -7,7 +7,7 @@ one Dart API.
 > [!WARNING]
 > **Alpha release — not for production use.**
 >
-> `0.0.1-alpha` is an early preview, intended for evaluation, prototypes, and internal test
+> `0.0.2-alpha` is an early preview, intended for evaluation, prototypes, and internal test
 > builds. Do **not** ship it in a production app or one with a large user base.
 >
 > - The public API may change without notice and may not stay source-compatible — expect to
