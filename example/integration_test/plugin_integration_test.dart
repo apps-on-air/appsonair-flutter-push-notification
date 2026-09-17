@@ -20,7 +20,7 @@ void main() {
       appId: 'integration-test-app-id',
       debug: true,
     );
-    final String? deviceId = await AppPushService.deviceId;
+    final String? deviceId = await AppPushService.User.appsonairId;
     expect(deviceId?.isNotEmpty, true);
   });
 }

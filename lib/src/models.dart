@@ -1,62 +1,6 @@
 /// Data and event models shared by the AppsOnAir push Dart API.
 library;
 
-/// SDK error codes. Not every code is possible on every platform — see the
-/// doc comment on each value.
-enum PushErrorCode {
-  /// [AppPushService.initialize] was not called before an API that requires it.
-  notInitialized,
-
-  /// The user denied (or the OS blocked) the notification permission request.
-  permissionDenied,
-
-  /// Android only — fetching the FCM token failed.
-  tokenFetchFailed,
-
-  /// Android only — fetching the Firebase Installation ID failed.
-  installationIdFetchFailed,
-
-  /// iOS only — APNs device-token registration failed.
-  apnsRegistrationFailed,
-
-  /// Any other/unrecognized native error code.
-  unknown;
-
-  /// Parses the wire-format string sent by the native side, falling back to
-  /// [unknown] for anything unrecognized.
-  static PushErrorCode fromWire(String? value) {
-    switch (value) {
-      case 'notInitialized':
-        return PushErrorCode.notInitialized;
-      case 'permissionDenied':
-        return PushErrorCode.permissionDenied;
-      case 'tokenFetchFailed':
-        return PushErrorCode.tokenFetchFailed;
-      case 'installationIdFetchFailed':
-        return PushErrorCode.installationIdFetchFailed;
-      case 'apnsRegistrationFailed':
-        return PushErrorCode.apnsRegistrationFailed;
-      default:
-        return PushErrorCode.unknown;
-    }
-  }
-}
-
-/// An SDK error reported via `AppPushService.addErrorListener`.
-class PushError {
-  /// Creates a push error with the given [code] and [message].
-  const PushError({required this.code, required this.message});
-
-  /// The error's category — see [PushErrorCode].
-  final PushErrorCode code;
-
-  /// A human-readable description of the error.
-  final String message;
-
-  @override
-  String toString() => 'PushError($code, $message)';
-}
-
 /// Logging verbosity for `AppsOnAirDebugManager.logLevel`.
 enum LogLevel {
   /// No logging. The default, and recommended for production.
@@ -254,14 +198,6 @@ class UserChangedState {
   final String appsonairId;
 }
 
-/// Signature for `AppPushService.addTokenListener`.
-typedef PushTokenListener = void Function(
-    String token, String? apnsEnvironment);
-
-/// Signature for `AppPushService.addNotificationReceivedListener` and
-/// `AppPushService.addNotificationOpenedListener`.
-typedef PushNotificationListener = void Function(PushNotification notification);
-
 /// Signature for `AppsOnAirNotificationsManager.addForegroundWillDisplayListener`.
 typedef NotificationWillDisplayListener = void Function(
     NotificationWillDisplayEvent event);
@@ -278,6 +214,3 @@ typedef PushSubscriptionListener = void Function(
 
 /// Signature for `AppsOnAirUserManager.addObserver`.
 typedef UserStateListener = void Function(UserChangedState state);
-
-/// Signature for `AppPushService.addErrorListener`.
-typedef PushErrorListener = void Function(PushError error);

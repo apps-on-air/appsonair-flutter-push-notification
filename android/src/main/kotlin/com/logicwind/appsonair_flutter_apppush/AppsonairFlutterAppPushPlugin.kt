@@ -50,22 +50,12 @@ class AppsonairFlutterAppPushPlugin :
     private lateinit var applicationContext: Context
     private var activity: Activity? = null
 
-    // FCM delivers PushListener/observer callbacks on its own background thread
-    // pool (e.g. "Firebase-Messaging-Intent-Handle" for onNewToken/onNotificationReceived),
-    // not the main thread — but EventChannel.EventSink.success() is @UiThread-only and
-    // crashes with "Methods marked with @UiThread must be executed on the main thread"
-    // otherwise. Every eventSink emission must go through this.
     private val mainHandler = Handler(Looper.getMainLooper())
 
     private fun sendEvent(event: Map<String, Any?>) {
         mainHandler.post { eventSink?.success(event) }
     }
 
-    // Foreground events currently awaiting a Dart-side preventDefault() decision.
-    // Best-effort only — the native SDK's own display-vs-suppress check runs on the
-    // next main-thread loop iteration, faster than a Flutter platform-channel round
-    // trip can normally resolve, so a discard requested from Dart may already be too
-    // late. Kept so a discard is still honoured whenever the round trip is fast enough.
     private val pendingWillDisplayEvents = mutableMapOf<String, NotificationWillDisplayEvent>()
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
@@ -100,11 +90,8 @@ class AppsonairFlutterAppPushPlugin :
         AppPushService.User.removeObserver(this)
     }
 
-    // ── ActivityAware ────────────────────────────────────────────────────
-
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activity = binding.activity
-        // Handle a notification tap that cold-started the app.
         AppPushService.handleNotificationTapIntent(binding.activity.intent)
     }
 
@@ -120,8 +107,6 @@ class AppsonairFlutterAppPushPlugin :
         activity = null
     }
 
-    // ── EventChannel.StreamHandler ──────────────────────────────────────
-
     override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
         eventSink = events
     }
@@ -130,14 +115,10 @@ class AppsonairFlutterAppPushPlugin :
         eventSink = null
     }
 
-    // ── MethodCallHandler ────────────────────────────────────────────────
-
     override fun onMethodCall(call: MethodCall, result: Result) {
         try {
             when (call.method) {
                 "initialize" -> {
-                    // appId is no longer passed to native — Core resolves it from the
-                    // "AppsonairAppId" AndroidManifest meta-data. "swizzle" is iOS-only.
                     val debug = call.argument<Boolean>("debug") ?: false
                     AppPushService.initialize(applicationContext, debug)
                     result.success(null)
@@ -165,7 +146,6 @@ class AppsonairFlutterAppPushPlugin :
                     result.success(null)
                 }
 
-                // ── User namespace ──────────────────────────────────────
                 "user#getExternalId" -> result.success(PushUser.externalId)
                 "user#pushSubscription#isOptedIn" ->
                     result.success(PushUser.PushSubscription.optedIn)
@@ -239,7 +219,6 @@ class AppsonairFlutterAppPushPlugin :
                     result.success(null)
                 }
 
-                // ── Notifications namespace ─────────────────────────────
                 "notifications#permission" ->
                     result.success(PushNotifications.permission(applicationContext))
                 "notifications#canRequestPermission" ->
@@ -254,7 +233,7 @@ class AppsonairFlutterAppPushPlugin :
                     PushNotifications.requestPermission(currentActivity, fallbackToSettings)
                     result.success(null)
                 }
-                "notifications#registerForProvisionalAuthorization" -> result.success(null) // iOS-only
+                "notifications#registerForProvisionalAuthorization" -> result.success(null)
                 "notifications#clearAll" -> {
                     PushNotifications.clearAllNotifications(applicationContext)
                     result.success(null)
@@ -283,7 +262,6 @@ class AppsonairFlutterAppPushPlugin :
                     result.success(null)
                 }
 
-                // ── Debug namespace ─────────────────────────────────────
                 "debug#setLogLevel" -> {
                     val level = call.argument<String>("level") ?: "none"
                     AppPushService.Debug.logLevel = LogLevel.entries.firstOrNull {
@@ -299,8 +277,6 @@ class AppsonairFlutterAppPushPlugin :
             result.error("APPSONAIR_PUSH_ERROR", e.message, null)
         }
     }
-
-    // ── PushListener ─────────────────────────────────────────────────────
 
     override fun onTokenUpdated(token: String) {
         sendEvent(mapOf("type" to "tokenUpdated", "token" to token, "environment" to null))
@@ -332,8 +308,6 @@ class AppsonairFlutterAppPushPlugin :
         )
     }
 
-    // ── INotificationLifecycleListener ──────────────────────────────────
-
     override fun onWillDisplay(event: NotificationWillDisplayEvent) {
         val eventId = UUID.randomUUID().toString()
         pendingWillDisplayEvents[eventId] = event
@@ -346,8 +320,6 @@ class AppsonairFlutterAppPushPlugin :
         )
     }
 
-    // ── INotificationClickListener ──────────────────────────────────────
-
     override fun onClick(event: NotificationClickEvent) {
         sendEvent(
             mapOf(
@@ -358,13 +330,9 @@ class AppsonairFlutterAppPushPlugin :
         )
     }
 
-    // ── INotificationPermissionObserver ─────────────────────────────────
-
     override fun onNotificationPermissionDidChange(permission: Boolean) {
         sendEvent(mapOf("type" to "permissionChanged", "granted" to permission))
     }
-
-    // ── IPushSubscriptionObserver ────────────────────────────────────────
 
     override fun onPushSubscriptionDidChange(state: PushSubscriptionChangedState) {
         sendEvent(
@@ -382,8 +350,6 @@ class AppsonairFlutterAppPushPlugin :
         )
     }
 
-    // ── IUserStateObserver ───────────────────────────────────────────────
-
     override fun onUserStateDidChange(state: UserChangedState) {
         sendEvent(
             mapOf(
@@ -393,8 +359,6 @@ class AppsonairFlutterAppPushPlugin :
             )
         )
     }
-
-    // ── Helpers ──────────────────────────────────────────────────────────
 
     private fun PushNotification.toMap(): Map<String, Any?> =
         mapOf("id" to id, "title" to title, "body" to body, "data" to data)

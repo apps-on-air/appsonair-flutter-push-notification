@@ -35,11 +35,6 @@ class AppPushService {
   /// Logging configuration.
   static final AppsOnAirDebugManager Debug = AppsOnAirDebugManager(_platform);
 
-  static final List<PushTokenListener> _tokenListeners = [];
-  static final List<PushNotificationListener> _receivedListeners = [];
-  static final List<PushNotificationListener> _openedListeners = [];
-  static final List<PushErrorListener> _errorListeners = [];
-
   static StreamSubscription<Map<Object?, Object?>>? _subscription;
 
   static void _ensureEventBridge() {
@@ -50,29 +45,6 @@ class AppPushService {
   static void _onEvent(Map<Object?, Object?> raw) {
     final type = raw['type'] as String?;
     switch (type) {
-      case 'tokenUpdated':
-        final token = raw['token'] as String? ?? '';
-        final environment = raw['environment'] as String?;
-        for (final l in List.of(_tokenListeners)) {
-          l(token, environment);
-        }
-        break;
-      case 'notificationReceived':
-        final notification = PushNotification.fromMap(
-          (raw['notification'] as Map?)?.cast<Object?, Object?>() ?? const {},
-        );
-        for (final l in List.of(_receivedListeners)) {
-          l(notification);
-        }
-        break;
-      case 'notificationOpened':
-        final notification = PushNotification.fromMap(
-          (raw['notification'] as Map?)?.cast<Object?, Object?>() ?? const {},
-        );
-        for (final l in List.of(_openedListeners)) {
-          l(notification);
-        }
-        break;
       case 'notificationWillDisplay':
         final notification = PushNotification.fromMap(
           (raw['notification'] as Map?)?.cast<Object?, Object?>() ?? const {},
@@ -101,15 +73,6 @@ class AppPushService {
       case 'userChanged':
         User.dispatch(UserChangedState.fromMap(raw));
         break;
-      case 'error':
-        final error = PushError(
-          code: PushErrorCode.fromWire(raw['code'] as String?),
-          message: raw['message'] as String? ?? '',
-        );
-        for (final l in List.of(_errorListeners)) {
-          l(error);
-        }
-        break;
     }
   }
 
@@ -136,9 +99,6 @@ class AppPushService {
   /// reverts to anonymous.
   static Future<void> logout() => _platform.logout();
 
-  /// The AppsOnAir-assigned device ID.
-  static Future<String?> get deviceId => _platform.getDeviceId();
-
   /// Gates all data collection on explicit consent. Set before [initialize]
   /// so it applies on the very first launch.
   static Future<void> setConsentRequired(bool value) =>
@@ -147,62 +107,4 @@ class AppPushService {
   /// Records whether the user has given (`true`) or withdrawn (`false`) consent.
   static Future<void> setConsentGiven(bool value) =>
       _platform.setConsentGiven(value);
-
-  /// Whether the notification permission is currently granted.
-  static Future<bool> isPermissionGranted() => _platform.isPermissionGranted();
-
-  /// Removes every notification this app has posted.
-  static Future<void> clearAllNotifications() =>
-      _platform.clearAllNotifications();
-
-  // ── Listeners ─────────────────────────────────────────────────────────
-
-  /// Fires when the push token is issued/refreshed.
-  /// Android: `token` is the FCM token, `apnsEnvironment` is always null.
-  /// iOS: `token` is the hex APNs token, `apnsEnvironment` is `"sandbox"`/`"production"`.
-  static void addTokenListener(PushTokenListener listener) {
-    _ensureEventBridge();
-    _tokenListeners.add(listener);
-  }
-
-  /// Removes a listener added with [addTokenListener].
-  static void removeTokenListener(PushTokenListener listener) =>
-      _tokenListeners.remove(listener);
-
-  /// Fires when a notification arrives while the app is running (foreground
-  /// or background), in addition to any system notification display.
-  static void addNotificationReceivedListener(
-    PushNotificationListener listener,
-  ) {
-    _ensureEventBridge();
-    _receivedListeners.add(listener);
-  }
-
-  /// Removes a listener added with [addNotificationReceivedListener].
-  static void removeNotificationReceivedListener(
-    PushNotificationListener listener,
-  ) =>
-      _receivedListeners.remove(listener);
-
-  /// Fires when the user taps a notification (cold start, background, or foreground).
-  static void addNotificationOpenedListener(PushNotificationListener listener) {
-    _ensureEventBridge();
-    _openedListeners.add(listener);
-  }
-
-  /// Removes a listener added with [addNotificationOpenedListener].
-  static void removeNotificationOpenedListener(
-    PushNotificationListener listener,
-  ) =>
-      _openedListeners.remove(listener);
-
-  /// Fires when the SDK reports an error — see [PushErrorCode] for the possible codes.
-  static void addErrorListener(PushErrorListener listener) {
-    _ensureEventBridge();
-    _errorListeners.add(listener);
-  }
-
-  /// Removes a listener added with [addErrorListener].
-  static void removeErrorListener(PushErrorListener listener) =>
-      _errorListeners.remove(listener);
 }

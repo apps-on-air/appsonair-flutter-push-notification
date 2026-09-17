@@ -186,8 +186,6 @@ abstract class AppsonairFlutterAppPushPlatform extends PlatformInterface {
     throw UnimplementedError('removeEmail() has not been implemented.');
   }
 
-  // ── Notifications namespace ─────────────────────────────────────────
-
   /// Current notification permission state.
   Future<bool> notificationsPermission() {
     throw UnimplementedError(
