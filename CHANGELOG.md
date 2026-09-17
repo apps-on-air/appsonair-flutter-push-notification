@@ -1,3 +1,3 @@
-## 0.0.1-alpha
+## 0.0.2-alpha
 
 AppsOnAir Push Notification service. (Alpha Internal Release).

@@ -12,7 +12,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/apps-on-air/appsonair-ios-push-notification.git",
-            exact: "0.0.2-alpha"
+            exact: "0.0.3-alpha"
         )
     ],
     targets: [
