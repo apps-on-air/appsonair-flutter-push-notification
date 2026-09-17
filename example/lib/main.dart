@@ -30,13 +30,8 @@ class _MyAppState extends State<MyApp> {
     await AppPushService.Debug.setLogLevel(LogLevel.verbose);
     await AppPushService.initialize(debug: true);
 
-    AppPushService.addTokenListener((token, environment) {
-      _appendLog(
-        'Token updated: $token${environment != null ? ' ($environment)' : ''}',
-      );
-    });
-    AppPushService.addErrorListener((error) {
-      _appendLog('Error: ${error.code} — ${error.message}');
+    AppPushService.User.pushSubscription.addObserver((state) {
+      _appendLog('Push subscription changed: ${state.current.token}');
     });
     AppPushService.Notifications.addForegroundWillDisplayListener((event) {
       _appendLog('Notification will display: ${event.notification.title}');
@@ -47,7 +42,7 @@ class _MyAppState extends State<MyApp> {
       );
     });
 
-    final deviceId = await AppPushService.deviceId;
+    final deviceId = await AppPushService.User.appsonairId;
     final tags = await AppPushService.User.getTags();
     if (!mounted) return;
     setState(() {

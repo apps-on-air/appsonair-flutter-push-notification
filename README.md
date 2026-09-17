@@ -7,7 +7,7 @@ one Dart API.
 > [!WARNING]
 > **Alpha release — not for production use.**
 >
-> `0.0.1-alpha` is an early preview, intended for evaluation, prototypes, and internal test
+> `0.0.3-alpha` is an early preview, intended for evaluation, prototypes, and internal test
 > builds. Do **not** ship it in a production app or one with a large user base.
 >
 > - The public API may change without notice and may not stay source-compatible — expect to
@@ -19,12 +19,8 @@ one Dart API.
 
 ## Features Overview
 
-- Push Token 📮
-> Get notified whenever the FCM token (Android) or APNs device token (iOS) is issued or refreshed.
-
-- Notification Received & Opened 📬
-> Listen for notifications as they arrive and when the user taps them, including any tapped
-  action button.
+- Notification Taps & Actions 📬
+> Listen for when the user taps a notification, including any tapped action button.
 
 - Foreground Display Control 🖥️
 > Decide whether a notification received while the app is in the foreground is shown by the
@@ -184,25 +180,10 @@ cd ios && pod install
 
 > Requires **Flutter ≥ 3.24.0**.
 
-Enable SPM globally via the Flutter CLI (one-time setup):
-
-```sh
-flutter config --enable-swift-package-manager
-```
-
-Then run:
-
-```sh
-flutter pub get
-```
-
-Flutter will automatically resolve `AppsOnAir-AppPush` via SPM from GitHub. No Podfile or
-additional Xcode configuration required.
-
-> **To switch back to CocoaPods:**
-> ```sh
-> flutter config --no-enable-swift-package-manager
-> ```
+SPM support is opt-in and configured through Flutter's `flutter config` toggle for Swift Package
+Manager (see the [Flutter SPM documentation](https://docs.flutter.dev/packages-and-plugins/swift-package-manager/for-plugin-authors)
+for how to enable/disable it). Once enabled, `flutter pub get` resolves `AppsOnAir-AppPush` via
+SPM from GitHub automatically — no Podfile or additional Xcode configuration required.
 
 #### Summary
 
@@ -247,29 +228,20 @@ Info.plist entry (iOS) declared above — no need to pass it from Dart.
 ### Listening for events
 
 ```dart
-AppPushService.addTokenListener((token, apnsEnvironment) {
-  // Android: FCM token, apnsEnvironment is always null.
-  // iOS: hex APNs token, apnsEnvironment is "sandbox" or "production".
-  print('Token: $token');
+AppPushService.User.pushSubscription.addObserver((state) {
+  // FCM token (Android) or hex APNs token (iOS), and opt-in state.
+  print('Token: ${state.current.token}, optedIn: ${state.current.isOptedIn}');
 });
 
-AppPushService.addNotificationReceivedListener((notification) {
-  print('Received: ${notification.title}');
-});
-
-AppPushService.addNotificationOpenedListener((notification) {
-  print('Opened: ${notification.title}');
-});
-
-AppPushService.addErrorListener((error) {
-  print('[${error.code}] ${error.message}');
+AppPushService.Notifications.addClickListener((event) {
+  print('Opened: ${event.notification.title}');
 });
 ```
 
 ### Requesting notification permission
 
 ```dart
-final granted = await AppPushService.isPermissionGranted();
+final granted = await AppPushService.Notifications.permission;
 if (!granted) {
   await AppPushService.Notifications.requestPermission();
 }
@@ -335,7 +307,7 @@ await AppPushService.setConsentGiven(false); // user withdrew
 ### Managing delivered notifications
 
 ```dart
-await AppPushService.clearAllNotifications();
+await AppPushService.Notifications.clearAll();
 await AppPushService.Notifications.removeNotification('order-4821');
 await AppPushService.Notifications.removeGroupedNotifications('orders'); // Android only
 ```

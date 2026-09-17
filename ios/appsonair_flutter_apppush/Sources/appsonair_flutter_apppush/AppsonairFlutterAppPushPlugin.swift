@@ -32,8 +32,6 @@ public class AppsonairFlutterAppPushPlugin: NSObject, FlutterPlugin, FlutterStre
     AppPushService.User.addObserver(instance)
   }
 
-  // MARK: - FlutterStreamHandler
-
   public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
     eventSink = events
     return nil
@@ -43,8 +41,6 @@ public class AppsonairFlutterAppPushPlugin: NSObject, FlutterPlugin, FlutterStre
     eventSink = nil
     return nil
   }
-
-  // MARK: - FlutterPlugin
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     let args = call.arguments as? [String: Any]
@@ -78,7 +74,6 @@ public class AppsonairFlutterAppPushPlugin: NSObject, FlutterPlugin, FlutterStre
       AppPushService.clearAllNotifications()
       result(nil)
 
-    // MARK: User namespace
     case "user#getExternalId":
       result(AppPushService.User.externalId)
     case "user#pushSubscription#isOptedIn":
@@ -135,7 +130,6 @@ public class AppsonairFlutterAppPushPlugin: NSObject, FlutterPlugin, FlutterStre
       AppPushService.User.removeEmail(args?["address"] as? String ?? "")
       result(nil)
 
-    // MARK: Notifications namespace
     case "notifications#permission":
       result(AppPushService.Notifications.permission)
     case "notifications#canRequestPermission":
@@ -157,7 +151,7 @@ public class AppsonairFlutterAppPushPlugin: NSObject, FlutterPlugin, FlutterStre
       }
       result(nil)
     case "notifications#removeGroupedNotifications":
-      result(nil) // Android-only
+      result(nil)
     case "notifications#completeDisplay":
       let eventId = args?["eventId"] as? String
       let discard = args?["discard"] as? Bool ?? false
@@ -167,7 +161,6 @@ public class AppsonairFlutterAppPushPlugin: NSObject, FlutterPlugin, FlutterStre
       }
       result(nil)
 
-    // MARK: Debug namespace
     case "debug#setLogLevel":
       AppPushService.Debug.logLevel = LogLevel(wire: args?["level"] as? String)
       result(nil)
@@ -179,8 +172,6 @@ public class AppsonairFlutterAppPushPlugin: NSObject, FlutterPlugin, FlutterStre
     }
   }
 }
-
-// MARK: - PushListener
 
 extension AppsonairFlutterAppPushPlugin: PushListener {
   public func onAPNsTokenUpdated(token: String, environment: APNsEnvironment) {
@@ -200,8 +191,6 @@ extension AppsonairFlutterAppPushPlugin: PushListener {
   }
 }
 
-// MARK: - NotificationLifecycleListener
-
 extension AppsonairFlutterAppPushPlugin: NotificationLifecycleListener {
   public func onWillDisplay(event: NotificationWillDisplayEvent) {
     let eventId = UUID().uuidString
@@ -214,8 +203,6 @@ extension AppsonairFlutterAppPushPlugin: NotificationLifecycleListener {
   }
 }
 
-// MARK: - NotificationClickListener
-
 extension AppsonairFlutterAppPushPlugin: NotificationClickListener {
   public func onClick(event: NotificationClickEvent) {
     eventSink?([
@@ -226,15 +213,11 @@ extension AppsonairFlutterAppPushPlugin: NotificationClickListener {
   }
 }
 
-// MARK: - NotificationPermissionObserver
-
 extension AppsonairFlutterAppPushPlugin: NotificationPermissionObserver {
   public func onNotificationPermissionDidChange(_ permission: Bool) {
     eventSink?(["type": "permissionChanged", "granted": permission])
   }
 }
-
-// MARK: - PushSubscriptionObserver
 
 extension AppsonairFlutterAppPushPlugin: PushSubscriptionObserver {
   public func onPushSubscriptionDidChange(state: PushSubscriptionChangedState) {
@@ -246,8 +229,6 @@ extension AppsonairFlutterAppPushPlugin: PushSubscriptionObserver {
   }
 }
 
-// MARK: - UserStateObserver
-
 extension AppsonairFlutterAppPushPlugin: UserStateObserver {
   public func onUserStateDidChange(state: UserChangedState) {
     eventSink?([
@@ -257,8 +238,6 @@ extension AppsonairFlutterAppPushPlugin: UserStateObserver {
     ])
   }
 }
-
-// MARK: - Helpers
 
 extension PushNotification {
   fileprivate func toMap() -> [String: Any] {

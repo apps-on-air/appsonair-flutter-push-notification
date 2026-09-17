@@ -36,8 +36,6 @@ class MethodChannelAppsonairFlutterAppPush
     return methodChannel.invokeMethod<T>(method, args);
   }
 
-  // ── Core ──────────────────────────────────────────────────────────────
-
   @override
   Future<void> initialize({
     String appId = '',
@@ -172,8 +170,6 @@ class MethodChannelAppsonairFlutterAppPush
     return methodChannel.invokeMethod('user#removeEmail', {'address': address});
   }
 
-  // ── Notifications namespace ─────────────────────────────────────────
-
   @override
   Future<bool> notificationsPermission() =>
       _invoke<bool>('notifications#permission');
@@ -224,8 +220,6 @@ class MethodChannelAppsonairFlutterAppPush
       'discard': discard,
     });
   }
-
-  // ── Debug namespace ──────────────────────────────────────────────────
 
   @override
   Future<void> setLogLevel(String level) {
