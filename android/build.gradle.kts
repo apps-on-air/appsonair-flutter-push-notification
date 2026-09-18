@@ -1,5 +1,5 @@
 group = "com.logicwind.appsonair_flutter_apppush"
-version = "0.0.2-alpha"
+version = "0.0.3-alpha"
 
 buildscript {
     val kotlinVersion = "2.2.20"
@@ -55,5 +55,5 @@ android {
 }
 
 dependencies {
-    api("com.github.apps-on-air:appsonair-android-push-notification:0.0.3-alpha")
+    api("com.github.apps-on-air:appsonair-android-push-notification:v0.0.3-alpha")
 }
