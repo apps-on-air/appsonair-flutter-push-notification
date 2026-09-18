@@ -1,6 +1,6 @@
 name: appsonair_flutter_apppush
 description: "Flutter plugin for the AppsOnAir Push Notification service (Android/iOS)."
-version: 0.0.2-alpha
+version: 0.0.3-alpha
 homepage: https://appsonair.com
 repository: https://github.com/apps-on-air/appsonair-flutter-push-notification
 
