@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'appsonair_flutter_apppush'
-  s.version          = '0.0.3-alpha'
+  s.version          = '0.0.4-alpha'
   s.summary          = 'AppsOnAir push notifications for Flutter.'
   s.description      = <<-DESC
 Flutter plugin wrapping the native AppsOnAir push notification SDKs (Android/iOS).
@@ -15,7 +15,7 @@ Flutter plugin wrapping the native AppsOnAir push notification SDKs (Android/iOS
   s.source           = { :path => '.' }
   s.source_files = 'appsonair_flutter_apppush/Sources/appsonair_flutter_apppush/**/*'
   s.dependency 'Flutter'
-  s.dependency 'AppsOnAir-AppPush', '0.0.3-alpha'
+  s.dependency 'AppsOnAir-AppPush', '0.0.4-alpha'
   s.platform = :ios, '15.0'
 
   # Flutter.framework does not contain a i386 slice.
