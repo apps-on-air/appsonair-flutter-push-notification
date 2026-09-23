@@ -52,8 +52,18 @@ class AppsonairFlutterAppPushPlugin :
 
     private val mainHandler = Handler(Looper.getMainLooper())
 
+
+    private val pendingEvents = mutableListOf<Map<String, Any?>>()
+
     private fun sendEvent(event: Map<String, Any?>) {
-        mainHandler.post { eventSink?.success(event) }
+        mainHandler.post {
+            val sink = eventSink
+            if (sink != null) {
+                sink.success(event)
+            } else {
+                pendingEvents.add(event)
+            }
+        }
     }
 
     private val pendingWillDisplayEvents = mutableMapOf<String, NotificationWillDisplayEvent>()
@@ -109,6 +119,11 @@ class AppsonairFlutterAppPushPlugin :
 
     override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
         eventSink = events
+        if (events != null && pendingEvents.isNotEmpty()) {
+            val buffered = pendingEvents.toList()
+            pendingEvents.clear()
+            buffered.forEach { events.success(it) }
+        }
     }
 
     override fun onCancel(arguments: Any?) {
