@@ -237,7 +237,7 @@ class AppsonairFlutterAppPushPlugin :
                 "notifications#permission" ->
                     result.success(PushNotifications.permission(applicationContext))
                 "notifications#canRequestPermission" ->
-                    result.success(PushNotifications.canRequestPermission(applicationContext))
+                    result.success(PushNotifications.canRequestPermission(activity ?: applicationContext))
                 "notifications#requestPermission" -> {
                     val currentActivity = activity
                     if (currentActivity == null) {
