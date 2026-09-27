@@ -29,6 +29,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import io.flutter.plugin.common.PluginRegistry
 import java.util.UUID
 
 /** AppsonairFlutterAppPushPlugin */
@@ -49,6 +50,8 @@ class AppsonairFlutterAppPushPlugin :
     private var eventSink: EventChannel.EventSink? = null
     private lateinit var applicationContext: Context
     private var activity: Activity? = null
+    private var activityBinding: ActivityPluginBinding? = null
+    private var newIntentListener: PluginRegistry.NewIntentListener? = null
 
     private val mainHandler = Handler(Looper.getMainLooper())
 
@@ -103,18 +106,39 @@ class AppsonairFlutterAppPushPlugin :
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activity = binding.activity
         AppPushService.handleNotificationTapIntent(binding.activity.intent)
+        registerNewIntentListener(binding)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
+        unregisterNewIntentListener()
         activity = null
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
         activity = binding.activity
+        registerNewIntentListener(binding)
     }
 
     override fun onDetachedFromActivity() {
+        unregisterNewIntentListener()
         activity = null
+    }
+
+
+    private fun registerNewIntentListener(binding: ActivityPluginBinding) {
+        activityBinding = binding
+        val listener = PluginRegistry.NewIntentListener { intent ->
+            AppPushService.handleNotificationTapIntent(intent)
+            false
+        }
+        newIntentListener = listener
+        binding.addOnNewIntentListener(listener)
+    }
+
+    private fun unregisterNewIntentListener() {
+        newIntentListener?.let { activityBinding?.removeOnNewIntentListener(it) }
+        newIntentListener = null
+        activityBinding = null
     }
 
     override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
