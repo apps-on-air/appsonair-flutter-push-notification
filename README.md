@@ -8,14 +8,14 @@ consent management, and debug logging — all through a single Dart API.
 > [!WARNING]
 > **Beta release — not yet recommended for production use.**
 >
-> `1.0.2-beta` is an early access release intended for evaluation, integration testing, and
+> `1.0.3-beta` is an early access release intended for evaluation, integration testing, and
 > prototype builds. Do not ship this version in a production app or a build with a large user base.
 >
 > - The public API may change between releases without a deprecation period.
 > - Breaking changes are not restricted to major versions while the SDK is in beta.
 > - Behavior in production-scale environments has not been fully validated.
 >
-> Use a patch-permissive constraint (`>=1.0.2-beta <1.1.0`) so patch releases flow through
+> Use a patch-permissive constraint (`>=1.0.3-beta <1.1.0`) so patch releases flow through
 > automatically, and re-test your integration on every upgrade.
 
 ---
@@ -68,7 +68,7 @@ Add the plugin to your app's `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  appsonair_flutter_apppush: '>=1.0.2-beta <1.1.0'
+  appsonair_flutter_apppush: '>=1.0.3-beta <1.1.0'
 ```
 
 Run:
@@ -580,7 +580,7 @@ flutter config --enable-swift-package-manager
 ```
 
 Once enabled, `flutter pub get` resolves the native iOS SDK
-(`appsonair-ios-push-notification 1.0.3-beta` from GitHub) automatically.
+(`appsonair-ios-push-notification 1.0.4-beta` from GitHub) automatically.
 No Podfile or Xcode configuration is required.
 
 To switch back to CocoaPods at any time:
