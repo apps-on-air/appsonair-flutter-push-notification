@@ -29,6 +29,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import io.flutter.plugin.common.PluginRegistry
 import java.util.UUID
 
 /** AppsonairFlutterAppPushPlugin */
@@ -49,11 +50,23 @@ class AppsonairFlutterAppPushPlugin :
     private var eventSink: EventChannel.EventSink? = null
     private lateinit var applicationContext: Context
     private var activity: Activity? = null
+    private var activityBinding: ActivityPluginBinding? = null
+    private var newIntentListener: PluginRegistry.NewIntentListener? = null
 
     private val mainHandler = Handler(Looper.getMainLooper())
 
+
+    private val pendingEvents = mutableListOf<Map<String, Any?>>()
+
     private fun sendEvent(event: Map<String, Any?>) {
-        mainHandler.post { eventSink?.success(event) }
+        mainHandler.post {
+            val sink = eventSink
+            if (sink != null) {
+                sink.success(event)
+            } else {
+                pendingEvents.add(event)
+            }
+        }
     }
 
     private val pendingWillDisplayEvents = mutableMapOf<String, NotificationWillDisplayEvent>()
@@ -93,22 +106,48 @@ class AppsonairFlutterAppPushPlugin :
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activity = binding.activity
         AppPushService.handleNotificationTapIntent(binding.activity.intent)
+        registerNewIntentListener(binding)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
+        unregisterNewIntentListener()
         activity = null
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
         activity = binding.activity
+        registerNewIntentListener(binding)
     }
 
     override fun onDetachedFromActivity() {
+        unregisterNewIntentListener()
         activity = null
+    }
+
+
+    private fun registerNewIntentListener(binding: ActivityPluginBinding) {
+        activityBinding = binding
+        val listener = PluginRegistry.NewIntentListener { intent ->
+            AppPushService.handleNotificationTapIntent(intent)
+            false
+        }
+        newIntentListener = listener
+        binding.addOnNewIntentListener(listener)
+    }
+
+    private fun unregisterNewIntentListener() {
+        newIntentListener?.let { activityBinding?.removeOnNewIntentListener(it) }
+        newIntentListener = null
+        activityBinding = null
     }
 
     override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
         eventSink = events
+        if (events != null && pendingEvents.isNotEmpty()) {
+            val buffered = pendingEvents.toList()
+            pendingEvents.clear()
+            buffered.forEach { events.success(it) }
+        }
     }
 
     override fun onCancel(arguments: Any?) {
@@ -222,7 +261,7 @@ class AppsonairFlutterAppPushPlugin :
                 "notifications#permission" ->
                     result.success(PushNotifications.permission(applicationContext))
                 "notifications#canRequestPermission" ->
-                    result.success(PushNotifications.canRequestPermission(applicationContext))
+                    result.success(PushNotifications.canRequestPermission(activity ?: applicationContext))
                 "notifications#requestPermission" -> {
                     val currentActivity = activity
                     if (currentActivity == null) {

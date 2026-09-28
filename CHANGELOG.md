@@ -1,3 +1,12 @@
+## 1.0.2-beta
+
+Bumped native Android and iOS SDK dependencies to 1.0.2-beta.
+
+## 1.0.1-beta
+
+Event analytics improvement.
+Bumped native Android and iOS SDK dependencies to 1.0.1-beta.
+
 ## 1.0.0-beta
 
 Minor SDK improvements.
