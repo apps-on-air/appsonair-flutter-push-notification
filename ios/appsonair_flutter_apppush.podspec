@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'appsonair_flutter_apppush'
-  s.version          = '1.0.2-beta'
+  s.version          = '1.0.3-beta'
   s.summary          = 'AppsOnAir push notifications for Flutter.'
   s.description      = <<-DESC
 Flutter plugin wrapping the native AppsOnAir push notification SDKs (Android/iOS).

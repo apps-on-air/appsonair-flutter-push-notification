@@ -5,7 +5,7 @@
 
 ---
 
-## 1.0.2-beta
+## 1.0.3-beta
 **Tag:** (pending — current working branch)
 **Status:** Ready to tag
 
