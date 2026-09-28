@@ -1,0 +1,32 @@
+{
+  "pins" : [
+    {
+      "identity" : "appsonair-ios-core",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apps-on-air/AppsOnAir-iOS-Core.git",
+      "state" : {
+        "revision" : "cfe76e2bb646e7ce11fe0cebba16ea616c2a1986",
+        "version" : "1.2.3"
+      }
+    },
+    {
+      "identity" : "appsonair-ios-push-notification",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apps-on-air/appsonair-ios-push-notification.git",
+      "state" : {
+        "revision" : "3a440df4bcc32eb53441133d88bad6e7cb3abc41",
+        "version" : "1.0.1-beta"
+      }
+    },
+    {
+      "identity" : "reachability.swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ashleymills/Reachability.swift.git",
+      "state" : {
+        "revision" : "21d1dc412cfecbe6e34f1f4c4eb88d3f912654a6",
+        "version" : "5.2.4"
+      }
+    }
+  ],
+  "version" : 2
+}

@@ -31,3 +31,6 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 /build/
 /coverage/
+
+# Internal development reference — not for public repository
+Flutter_SDK_INTERNAL.md

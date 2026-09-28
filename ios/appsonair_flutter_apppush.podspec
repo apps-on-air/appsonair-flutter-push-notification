@@ -15,7 +15,7 @@ Flutter plugin wrapping the native AppsOnAir push notification SDKs (Android/iOS
   s.source           = { :path => '.' }
   s.source_files = 'appsonair_flutter_apppush/Sources/appsonair_flutter_apppush/**/*'
   s.dependency 'Flutter'
-  s.dependency 'AppsOnAir-AppPush', '1.0.2-beta'
+  s.dependency 'AppsOnAir-AppPush', '1.0.4-beta'
   s.platform = :ios, '15.0'
 
   # Flutter.framework does not contain a i386 slice.
