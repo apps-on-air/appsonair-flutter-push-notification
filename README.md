@@ -5,9 +5,9 @@ registration, rich notifications, taps/actions, tags, aliases, opt-in/opt-out, a
 one Dart API.
 
 > [!WARNING]
-> **Alpha release — not for production use.**
+> **Beta release — not yet recommended for production use.**
 >
-> `0.0.4-alpha` is an early preview, intended for evaluation, prototypes, and internal test
+> `1.0.2-beta` is a beta preview, intended for evaluation, prototypes, and internal test
 > builds. Do **not** ship it in a production app or one with a large user base.
 >
 > - The public API may change without notice and may not stay source-compatible — expect to
