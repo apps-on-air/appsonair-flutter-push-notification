@@ -51,6 +51,11 @@
 			</array>
 		</dict>
 	</dict>
+	<!-- Required for background push delivery (remote-notification background mode). -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
