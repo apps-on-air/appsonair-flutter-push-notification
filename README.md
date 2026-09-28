@@ -14,9 +14,6 @@ consent management, and debug logging — all through a single Dart API.
 > - The public API may change between releases without a deprecation period.
 > - Breaking changes are not restricted to major versions while the SDK is in beta.
 > - Behavior in production-scale environments has not been fully validated.
->
-> Use a patch-permissive constraint (`>=1.0.3-beta <1.1.0`) so patch releases flow through
-> automatically, and re-test your integration on every upgrade.
 
 ---
 
