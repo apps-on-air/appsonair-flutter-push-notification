@@ -88,11 +88,10 @@ Open `example/ios/Runner.xcworkspace` in Xcode:
 No changes needed — `AppPushService.initialize(swizzle: false)` is called before
 `GeneratedPluginRegistrant.register(with:)` to capture kill-mode notification taps.
 
-### 4. iOS dependency (SPM — no action required)
+### 4. iOS dependency (no action required)
 
-Flutter resolves the SPM dependency (`AppsOnAir-AppPush 1.0.4-beta` from
-`https://github.com/apps-on-air/appsonair-ios-push-notification.git`) automatically
-when you open the workspace or run `flutter build ios`. No manual step required.
+Flutter resolves the native iOS dependency automatically when you open the workspace
+or run `flutter build ios`. No manual step required.
 
 ---
 
