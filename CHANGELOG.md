@@ -1,7 +1,5 @@
 ## 1.0.3-beta
-
 Minor cross-platform SDK fixes.
-Bumped native SDK dependencies (iOS: AppsOnAir-AppPush 1.0.4-beta, Android: appsonair-android-push-notification 1.0.2-beta).
 
 ## 1.0.2-beta
 
