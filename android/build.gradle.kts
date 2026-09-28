@@ -1,5 +1,5 @@
 group = "com.logicwind.appsonair_flutter_apppush"
-version = "1.0.2-beta"
+version = "1.0.3-beta"
 
 buildscript {
     val kotlinVersion = "2.2.20"

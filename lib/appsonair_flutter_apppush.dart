@@ -65,6 +65,19 @@ class AppPushService {
           raw['granted'] as bool? ?? false,
         );
         break;
+      case 'tokenUpdated':
+        // Native PushListener.onAPNsTokenUpdated fires when the APNs token
+        // arrives — this is separate from subscriptionChanged and happens
+        // earlier (e.g. "subscription deferred" at init). Synthesise a
+        // subscription-changed dispatch so all addObserver listeners fire.
+        User.pushSubscription.dispatch(PushSubscriptionChangedState(
+          previous: const PushSubscriptionState(token: null, isOptedIn: false),
+          current: PushSubscriptionState(
+            token: raw['token'] as String?,
+            isOptedIn: true,
+          ),
+        ));
+        break;
       case 'subscriptionChanged':
         User.pushSubscription.dispatch(
           PushSubscriptionChangedState.fromMap(raw),

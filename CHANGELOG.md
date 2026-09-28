@@ -1,11 +1,15 @@
+## 1.0.3-beta
+Minor cross-platform SDK fixes.
+
 ## 1.0.2-beta
 
-Bumped native Android and iOS SDK dependencies to 1.0.2-beta.
+Minor SDK improvements.
+Bumped native SDK dependencies to 1.0.2-beta.
 
 ## 1.0.1-beta
 
 Event analytics improvement.
-Bumped native Android and iOS SDK dependencies to 1.0.1-beta.
+Updated native SDK dependencies to 1.0.1-beta (iOS: AppsOnAir-AppPush, Android: appsonair-android-push-notification).
 
 ## 1.0.0-beta
 

@@ -13,6 +13,10 @@ class AppsOnAirNotificationsManager {
   final List<NotificationWillDisplayListener> _foregroundListeners = [];
   final List<NotificationClickListener> _clickListeners = [];
 
+  // Kill-mode Dart buffer: clicks that fired before any addClickListener call
+  // are queued here and replayed the moment the first listener registers.
+  final List<NotificationClickEvent> _pendingKillModeClicks = [];
+
   Future<bool> get permission => _platform.notificationsPermission();
 
   /// Whether the system will show the permission dialog if
@@ -66,6 +70,14 @@ class AppsOnAirNotificationsManager {
   /// action button.
   void addClickListener(NotificationClickListener listener) {
     _clickListeners.add(listener);
+    // Replay all kill-mode taps that arrived before any listener was registered.
+    if (_pendingKillModeClicks.isNotEmpty) {
+      final pending = List.of(_pendingKillModeClicks);
+      _pendingKillModeClicks.clear();
+      for (final event in pending) {
+        listener(event);
+      }
+    }
   }
 
   /// Removes a listener added with [addClickListener].
@@ -100,6 +112,12 @@ class AppsOnAirNotificationsManager {
   /// Not for public use — invoked internally to fan out a native click event
   /// to registered listeners.
   void dispatchClick(NotificationClickEvent event) {
+    if (_clickListeners.isEmpty) {
+      // No listener registered yet (kill-mode race) — queue until addClickListener fires.
+      _pendingKillModeClicks.add(event);
+      return;
+    }
+    _pendingKillModeClicks.clear();
     for (final listener in List.of(_clickListeners)) {
       listener(event);
     }
@@ -111,5 +129,9 @@ class AppsOnAirNotificationsManager {
     for (final listener in List.of(_foregroundListeners)) {
       listener(event);
     }
+    // If no listener called preventDefault(), auto-complete with display=true.
+    // Without this the native completion handler is never invoked and the
+    // foreground banner is silently dropped.
+    event.completeIfNeeded();
   }
 }

@@ -103,6 +103,15 @@ class NotificationWillDisplayEvent {
     _resolved = true;
     _complete(_eventId, true);
   }
+
+  /// Not for public use — called by the SDK after all listeners have run.
+  /// If no listener called [preventDefault], completes with display=true so
+  /// the native completion handler fires and the banner is shown.
+  void completeIfNeeded() {
+    if (_resolved) return;
+    _resolved = true;
+    _complete(_eventId, false);
+  }
 }
 
 /// Fired when the user taps a notification or one of its action buttons.

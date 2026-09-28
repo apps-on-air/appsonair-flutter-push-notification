@@ -1,13 +1,28 @@
 import AppsOnAir_AppPush
 import Flutter
 import UIKit
+import UserNotifications
 
 @MainActor
 public class AppsonairFlutterAppPushPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
   private var eventSink: FlutterEventSink?
 
+  // Kill-mode tap buffer: click events that fire before the Dart event stream
+  // connects are queued here and flushed the moment onListen() is called.
+  private var pendingClickEvents: [[String: Any]] = []
+
   private var pendingWillDisplayEvents: [String: NotificationWillDisplayEvent] = [:]
+
+  // Kill-mode UNNotificationResponse buffer: when the plugin is the early
+  // UNUserNotificationCenterDelegate (set in register(with:) before
+  // didFinishLaunchingWithOptions returns), a tap can arrive before Dart calls
+  // initialize(). We hold it here and forward it in case "initialize".
+  private var pendingLaunchResponse: UNNotificationResponse? = nil
+  // Tracks whether AppPushService.initialize() has been called from Dart.
+  // Used by the UNUserNotificationCenterDelegate extension to decide whether
+  // to forward or buffer a notification response.
+  private var sdkInitialized = false
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let instance = AppsonairFlutterAppPushPlugin()
@@ -30,10 +45,29 @@ public class AppsonairFlutterAppPushPlugin: NSObject, FlutterPlugin, FlutterStre
     AppPushService.Notifications.addPermissionObserver(instance)
     AppPushService.User.pushSubscription.addObserver(instance)
     AppPushService.User.addObserver(instance)
+
+    // Install this instance as the UNUserNotificationCenterDelegate NOW, while
+    // we are still inside didFinishLaunchingWithOptions. iOS delivers the
+    // kill-mode didReceive(_:withCompletionHandler:) on the very first run-loop
+    // turn AFTER that function returns — before Dart's async initialize() ever
+    // runs. If no delegate is set by then, the tap is silently dropped and
+    // analytics are never recorded.
+    // We only install when nothing else has claimed the delegate slot.
+    // AppPushService.initialize(swizzle:true) will see center.delegate != nil
+    // and skip installing its own PushNotificationDelegate — this plugin takes
+    // over both willPresent and didReceive for the lifetime of the process.
+    let center = UNUserNotificationCenter.current()
+    if center.delegate == nil {
+      center.delegate = instance
+    }
   }
 
   public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
     eventSink = events
+    // Flush any click events buffered before the Dart stream was ready (kill-mode taps).
+    let pending = pendingClickEvents
+    pendingClickEvents.removeAll()
+    pending.forEach { events($0) }
     return nil
   }
 
@@ -51,6 +85,12 @@ public class AppsonairFlutterAppPushPlugin: NSObject, FlutterPlugin, FlutterStre
         debug: args?["debug"] as? Bool ?? false,
         swizzle: args?["swizzle"] as? Bool ?? true
       )
+      sdkInitialized = true
+      // Replay any kill-mode tap that arrived before initialize() was called.
+      if let pending = pendingLaunchResponse {
+        pendingLaunchResponse = nil
+        AppPushService.handleDidReceive(response: pending)
+      }
       result(nil)
     case "login":
       AppPushService.login(args?["externalId"] as? String ?? "")
@@ -173,6 +213,48 @@ public class AppsonairFlutterAppPushPlugin: NSObject, FlutterPlugin, FlutterStre
   }
 }
 
+// MARK: - UNUserNotificationCenterDelegate
+
+// The plugin sets itself as UNUserNotificationCenter.current().delegate in
+// register(with:) so the delegate is in place before didFinishLaunchingWithOptions
+// returns — capturing kill-mode taps that iOS delivers on the very next run-loop turn.
+//
+// willPresent: forward directly to AppPushService (foreground display control).
+// didReceive:  if initialize() has already run, forward immediately; otherwise
+//              buffer until the "initialize" method channel call replays it.
+//
+// When AppPushService.initialize(swizzle: true) runs later, its swizzler sees
+// center.delegate != nil and skips installing PushNotificationDelegate — this
+// extension takes over both callbacks for the process lifetime.
+extension AppsonairFlutterAppPushPlugin: @preconcurrency UNUserNotificationCenterDelegate {
+
+  public func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    willPresent notification: UNNotification
+  ) async -> UNNotificationPresentationOptions {
+    return AppPushService.handleWillPresent(notification: notification)
+  }
+
+  public func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    didReceive response: UNNotificationResponse,
+    withCompletionHandler completionHandler: @escaping () -> Void
+  ) {
+    if sdkInitialized {
+      AppPushService.handleDidReceive(response: response)
+    } else {
+      // SDK not yet initialized (kill-mode tap before Dart's initialize() ran).
+      // Buffer it — replayed in case "initialize" above.
+      if pendingLaunchResponse == nil {
+        pendingLaunchResponse = response
+      }
+    }
+    completionHandler()
+  }
+}
+
+// MARK: - PushListener
+
 extension AppsonairFlutterAppPushPlugin: PushListener {
   public func onAPNsTokenUpdated(token: String, environment: APNsEnvironment) {
     eventSink?(["type": "tokenUpdated", "token": token, "environment": environment.rawValue])
@@ -205,11 +287,17 @@ extension AppsonairFlutterAppPushPlugin: NotificationLifecycleListener {
 
 extension AppsonairFlutterAppPushPlugin: NotificationClickListener {
   public func onClick(event: NotificationClickEvent) {
-    eventSink?([
+    let payload: [String: Any] = [
       "type": "notificationClicked",
       "notification": event.notification.toMap(),
       "actionId": event.result.actionId as Any,
-    ])
+    ]
+    guard let sink = eventSink else {
+      // Dart stream not yet connected (kill-mode tap) — buffer until onListen fires.
+      pendingClickEvents.append(payload)
+      return
+    }
+    sink(payload)
   }
 }
 

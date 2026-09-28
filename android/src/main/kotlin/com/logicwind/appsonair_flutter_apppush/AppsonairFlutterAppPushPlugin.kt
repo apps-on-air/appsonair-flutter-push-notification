@@ -55,6 +55,11 @@ class AppsonairFlutterAppPushPlugin :
 
     private val mainHandler = Handler(Looper.getMainLooper())
 
+    // Kill-mode: store the launch intent so it can be processed after initialize() is called.
+    // handleNotificationTapIntent must not be called before AppPushService.initialize() or the
+    // SDK is not yet ready to record the open event / fire click callbacks.
+    private var pendingLaunchIntent: android.content.Intent? = null
+    private var sdkInitialized = false
 
     private val pendingEvents = mutableListOf<Map<String, Any?>>()
 
