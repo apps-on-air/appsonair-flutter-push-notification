@@ -8,7 +8,7 @@ consent management, and debug logging — all through a single Dart API.
 > [!WARNING]
 > **Beta release — not yet recommended for production use.**
 >
-> `1.0.3-beta` is an early access release intended for evaluation, integration testing, and
+> `1.0.4-beta` is an early access release intended for evaluation, integration testing, and
 > prototype builds. Do not ship this version in a production app or a build with a large user base.
 >
 > - The public API may change between releases without a deprecation period.
@@ -65,7 +65,7 @@ Add the plugin to your app's `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  appsonair_flutter_apppush: '>=1.0.3-beta <1.1.0'
+  appsonair_flutter_apppush: '>=1.0.4-beta'
 ```
 
 Run:
