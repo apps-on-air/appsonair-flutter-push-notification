@@ -1,3 +1,7 @@
+## 1.0.4-beta
+- Minor Documentation changes.
+- Minor SDK improvements.
+
 ## 1.0.3-beta
 Minor cross-platform SDK fixes.
 
