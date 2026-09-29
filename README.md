@@ -237,36 +237,29 @@ and add:
 
 ### 3. AppDelegate — required
 
-Open `ios/Runner/AppDelegate.swift` and add the four overrides below.
+Open `ios/Runner/AppDelegate.swift` and replace its contents with the following.
 
-Flutter starts the SDK from Dart — which runs after the iOS app has already launched. This means iOS can deliver an APNs token or a notification tap before the SDK is ready. These overrides make sure the SDK never misses those events.
-
-> **Important:** Call `AppPushService.initialize(swizzle: false)` **natively** in `didFinishLaunchingWithOptions`, before `GeneratedPluginRegistrant.register()`. This ensures the SDK is ready when iOS delivers a kill-mode notification tap — which fires `handleDidReceive` before Dart has started. Without this, kill-mode analytics (opened/clicked events) are lost.
->
-> Because the SDK guards against double-initialization, the Dart-side `AppPushService.initialize()` call is safely ignored when called later.
->
-> Pass `swizzle: false` here — Flutter's engine intercepts `AppDelegate` methods, so manual overrides below are required instead of swizzling.
+The plugin uses `FlutterImplicitEngineDelegate` to register itself as the `UNUserNotificationCenter` delegate before `didFinishLaunchingWithOptions` returns. This ensures kill-mode notification taps are captured before Dart's `AppPushService.initialize()` runs.
 
 ```swift
-import UIKit
-import Flutter
-import UserNotifications
 import AppsOnAir_AppPush
+import Flutter
+import UIKit
 
 @main
-@objc class AppDelegate: FlutterAppDelegate {
+@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
 
     override func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        // Initialize the SDK here (native, before Flutter engine starts) so that
-        // kill-mode notification taps can enqueue analytics before Dart runs.
-        // swizzle: false — Flutter intercepts AppDelegate methods; use the manual
-        // overrides below instead. The SDK ignores a second initialize() call from Dart.
-        AppPushService.initialize(swizzle: false)
-        GeneratedPluginRegistrant.register(with: self)
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    }
+
+    func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+        // The plugin registers itself as UNUserNotificationCenter delegate here,
+        // capturing kill-mode taps before Dart's AppPushService.initialize() runs.
+        GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     }
 
     // Gives the SDK the APNs device token as soon as iOS provides it.
@@ -285,26 +278,6 @@ import AppsOnAir_AppPush
     ) {
         AppPushService.handleAPNsRegistrationError(error)
         super.application(application, didFailToRegisterForRemoteNotificationsWithError: error)
-    }
-
-    // Handles notification taps — including when the app is launched from a killed state.
-    override func userNotificationCenter(
-        _ center: UNUserNotificationCenter,
-        didReceive response: UNNotificationResponse,
-        withCompletionHandler completionHandler: @escaping () -> Void
-    ) {
-        AppPushService.handleDidReceive(response: response)
-        super.userNotificationCenter(center, didReceive: response, withCompletionHandler: completionHandler)
-    }
-
-    // Shows the notification banner while the app is open in the foreground.
-    override func userNotificationCenter(
-        _ center: UNUserNotificationCenter,
-        willPresent notification: UNNotification,
-        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
-    ) {
-        let options = AppPushService.handleWillPresent(notification: notification)
-        completionHandler(options)
     }
 }
 ```
@@ -624,9 +597,7 @@ argument is required from Dart.
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `debug` | `bool` | `false` | Enables debug log output. Prefer `Debug.setLogLevel()` for finer control. |
-| `swizzle` | `bool` | `true` | **iOS only.** When `true`, the SDK swizzles `AppDelegate` methods automatically. Set to `false` for Flutter apps — Flutter's engine intercepts `AppDelegate` methods, so the manual overrides in `AppDelegate.swift` are required instead. |
-
-> **Flutter apps should always pass `swizzle: false`** (both in the native `AppDelegate.swift` call and the Dart `initialize()` call) since the manual `AppDelegate` overrides are already in place.
+| `swizzle` | `bool` | `true` | **iOS only.** When `true`, the SDK swizzles `AppDelegate` methods automatically. Flutter apps do not need to set this — the `FlutterImplicitEngineDelegate` pattern handles all delegate setup automatically. |
 
 ---
 
@@ -989,11 +960,11 @@ await AppPushService.setConsentGiven(false);  // user withdrew consent
 2. Run on a physical device — APNs tokens are not issued on the iOS Simulator.
 3. Verify `AppsonairAppId` is present in `Info.plist`.
 4. Verify `AppPushService.initialize()` is called early (before `runApp` or in `initState`).
-5. Verify `AppDelegate.swift` includes the `didRegisterForRemoteNotificationsWithDeviceToken` and `didFailToRegisterForRemoteNotificationsWithError` overrides (see [AppDelegate](#3-appdelegate)). `initialize()` is called from Dart after the Flutter engine starts — an APNs token can arrive before the swizzle is installed, and without these overrides the token is silently lost.
+5. Verify `AppDelegate.swift` includes the `didRegisterForRemoteNotificationsWithDeviceToken` and `didFailToRegisterForRemoteNotificationsWithError` overrides and conforms to `FlutterImplicitEngineDelegate` (see [AppDelegate](#3-appdelegate)). APNs tokens can arrive before the Flutter engine starts — without these overrides the token is silently lost.
 
 ### iOS — notification tap not handled (kill mode)
 
-Tapping a notification that cold-launches the app fires `didReceive` before Dart runs and before `initialize()` is called. Without the `userNotificationCenter(_:didReceive:withCompletionHandler:)` override in `AppDelegate.swift`, the tap event is lost. Add the override as shown in [AppDelegate](#3-appdelegate).
+Tapping a notification that cold-launches the app fires `didReceive` before Dart runs and before `initialize()` is called. The `FlutterImplicitEngineDelegate` pattern handles this automatically — the plugin registers itself as `UNUserNotificationCenter` delegate in `didInitializeImplicitFlutterEngine`, before Dart starts. Verify `AppDelegate.swift` matches the pattern in [AppDelegate](#3-appdelegate).
 
 ### iOS — CocoaPods and Swift Package Manager conflict
 
