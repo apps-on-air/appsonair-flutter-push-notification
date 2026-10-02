@@ -1,3 +1,6 @@
+## 1.0.5-beta
+- Minor Documentation changes.
+
 ## 1.0.4-beta
 - Minor Documentation changes.
 - Minor SDK improvements.
