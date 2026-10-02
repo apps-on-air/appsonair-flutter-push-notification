@@ -32,5 +32,11 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Example app — generated files that change with local environments
+example/pubspec.lock
+example/ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+example/ios/Runner.xcworkspace/xcshareddata/swiftpm/Package.resolved
+
 # Internal development reference — not for public repository
 Flutter_SDK_INTERNAL.md
+release_notes.md

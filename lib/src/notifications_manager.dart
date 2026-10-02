@@ -12,6 +12,7 @@ class AppsOnAirNotificationsManager {
   final List<NotificationPermissionListener> _permissionObservers = [];
   final List<NotificationWillDisplayListener> _foregroundListeners = [];
   final List<NotificationClickListener> _clickListeners = [];
+  final List<NotificationReceivedListener> _receivedListeners = [];
 
   // Kill-mode Dart buffer: clicks that fired before any addClickListener call
   // are queued here and replayed the moment the first listener registers.
@@ -85,6 +86,18 @@ class AppsOnAirNotificationsManager {
     _clickListeners.remove(listener);
   }
 
+  /// Add a listener that fires when a push notification arrives while the app
+  /// is in the foreground. Does not fire for background or silent (data-only)
+  /// pushes — use [AppPushService.setSilentPushListener] for those.
+  void addNotificationReceivedListener(NotificationReceivedListener listener) {
+    _receivedListeners.add(listener);
+  }
+
+  /// Removes a listener added with [addNotificationReceivedListener].
+  void removeNotificationReceivedListener(NotificationReceivedListener listener) {
+    _receivedListeners.remove(listener);
+  }
+
   /// Remove all delivered notifications from the notification shade /
   /// Notification Center.
   Future<void> clearAll() => _platform.notificationsClearAll();
@@ -120,6 +133,14 @@ class AppsOnAirNotificationsManager {
     _pendingKillModeClicks.clear();
     for (final listener in List.of(_clickListeners)) {
       listener(event);
+    }
+  }
+
+  /// Not for public use — invoked internally to fan out a native
+  /// notification-received event to registered listeners.
+  void dispatchNotificationReceived(PushNotification notification) {
+    for (final listener in List.of(_receivedListeners)) {
+      listener(notification);
     }
   }
 

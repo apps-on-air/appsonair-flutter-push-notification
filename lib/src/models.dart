@@ -217,6 +217,27 @@ typedef NotificationClickListener = void Function(NotificationClickEvent event);
 /// Signature for `AppsOnAirNotificationsManager.addPermissionObserver`.
 typedef NotificationPermissionListener = void Function(bool granted);
 
+/// Signature for `AppsOnAirNotificationsManager.addNotificationReceivedListener`.
+/// Fires when a push notification arrives while the app is in the foreground.
+/// Does not fire for background or silent (data-only) pushes — use
+/// [SilentPushListener] for those.
+typedef NotificationReceivedListener = void Function(PushNotification notification);
+
+/// Signature for `AppPushService.setSilentPushListener`.
+///
+/// Fires when a silent (data-only) push is delivered to the device:
+/// - **Android**: FCM data-only payload containing `"silent": "true"`.
+/// - **iOS**: APNs payload with `content-available: 1` and no `alert` block.
+///
+/// [data] is the raw payload key-value map. On Android all values are
+/// [String] (FCM limitation); on iOS values retain their original APNs types.
+///
+/// **Threading**: The callback runs on the Dart main isolate.
+/// **iOS time limit**: iOS grants ~30 s of background execution. Keep work
+/// lightweight; hand off heavier tasks to a background isolate or schedule a
+/// `BGTask` if you need more time.
+typedef SilentPushListener = void Function(Map<String, dynamic> data);
+
 /// Signature for `AppsOnAirPushSubscription.addObserver`.
 typedef PushSubscriptionListener = void Function(
     PushSubscriptionChangedState state);

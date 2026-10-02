@@ -36,6 +36,7 @@ class AppPushService {
   static final AppsOnAirDebugManager Debug = AppsOnAirDebugManager(_platform);
 
   static StreamSubscription<Map<Object?, Object?>>? _subscription;
+  static SilentPushListener? _silentPushListener;
 
   static void _ensureEventBridge() {
     if (_subscription != null) return;
@@ -45,6 +46,13 @@ class AppPushService {
   static void _onEvent(Map<Object?, Object?> raw) {
     final type = raw['type'] as String?;
     switch (type) {
+      case 'silentPushReceived':
+        final rawData = raw['data'];
+        final data = rawData is Map
+            ? rawData.map((k, v) => MapEntry(k.toString(), v))
+            : const <String, dynamic>{};
+        _silentPushListener?.call(data);
+        break;
       case 'notificationWillDisplay':
         final notification = PushNotification.fromMap(
           (raw['notification'] as Map?)?.cast<Object?, Object?>() ?? const {},
@@ -56,6 +64,13 @@ class AppPushService {
           (id, discard) => _platform.completeNotificationDisplay(id, discard),
         );
         Notifications.dispatchWillDisplay(event);
+        break;
+      case 'notificationReceived':
+        Notifications.dispatchNotificationReceived(
+          PushNotification.fromMap(
+            (raw['notification'] as Map?)?.cast<Object?, Object?>() ?? const {},
+          ),
+        );
         break;
       case 'notificationClicked':
         Notifications.dispatchClick(NotificationClickEvent.fromMap(raw));
@@ -120,4 +135,20 @@ class AppPushService {
   /// Records whether the user has given (`true`) or withdrawn (`false`) consent.
   static Future<void> setConsentGiven(bool value) =>
       _platform.setConsentGiven(value);
+
+  /// Registers a listener for silent (data-only) push notifications.
+  ///
+  /// - **Android**: fires when the FCM payload contains `"silent": "true"` in
+  ///   the data map. No notification banner is shown.
+  /// - **iOS**: fires when the APNs payload carries `content-available: 1`
+  ///   with no `alert` block. Requires **Background Modes → Remote notifications**
+  ///   enabled in Xcode.
+  ///
+  /// Call this before [initialize] so silent pushes that wake the app in the
+  /// background are not missed. Pass `null` to unregister the current listener.
+  ///
+  /// Only one listener is active at a time — each call replaces the previous one.
+  static void setSilentPushListener(SilentPushListener? listener) {
+    _silentPushListener = listener;
+  }
 }

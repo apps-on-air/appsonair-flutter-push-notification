@@ -12,3 +12,7 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+
+# Firebase — contains project credentials. Each developer adds their own.
+# See example/README.md for setup instructions.
+app/google-services.json

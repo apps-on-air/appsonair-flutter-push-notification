@@ -55,12 +55,6 @@ class AppsonairFlutterAppPushPlugin :
 
     private val mainHandler = Handler(Looper.getMainLooper())
 
-    // Kill-mode: store the launch intent so it can be processed after initialize() is called.
-    // handleNotificationTapIntent must not be called before AppPushService.initialize() or the
-    // SDK is not yet ready to record the open event / fire click callbacks.
-    private var pendingLaunchIntent: android.content.Intent? = null
-    private var sdkInitialized = false
-
     private val pendingEvents = mutableListOf<Map<String, Any?>>()
 
     private fun sendEvent(event: Map<String, Any?>) {
@@ -95,12 +89,26 @@ class AppsonairFlutterAppPushPlugin :
         AppPushService.Notifications.addPermissionObserver(this)
         PushUser.PushSubscription.addObserver(this)
         AppPushService.User.addObserver(this)
+
+        // Pre-create the custom-sound notification channel (Android 8+).
+        // Reads the res/raw sound name from the manifest meta-data key
+        // "com.appsonair.apppush.default_notification_sound" if present,
+        // otherwise falls back to "custom_sound" if that file exists in res/raw.
+        // No host-app code required — the channel is created here automatically.
+        createDefaultSoundChannelIfNeeded(applicationContext)
+
+        // Silent push — FCM data-only payload with "silent": "true".
+        // Fires on the FCM worker thread; sendEvent() posts to the main thread.
+        AppPushService.onSilentPushReceived = { data ->
+            sendEvent(mapOf("type" to "silentPushReceived", "data" to data))
+        }
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
         eventChannel.setStreamHandler(null)
         AppPushService.setListener(null)
+        AppPushService.onSilentPushReceived = null
         AppPushService.Notifications.removeForegroundLifecycleListener(this)
         AppPushService.Notifications.removeClickListener(this)
         AppPushService.Notifications.removePermissionObserver(this)
@@ -406,6 +414,45 @@ class AppsonairFlutterAppPushPlugin :
 
     private fun PushNotification.toMap(): Map<String, Any?> =
         mapOf("id" to id, "title" to title, "body" to body, "data" to data)
+
+    /**
+     * Creates a custom-sound notification channel without any host-app or method-channel code.
+     *
+     * Sound resolution order:
+     *   1. Manifest meta-data "com.appsonair.apppush.default_notification_sound" — lets the host
+     *      app declare a sound name without writing any Kotlin.
+     *   2. "custom_sound" — if a res/raw/custom_sound.* file exists in the host app.
+     *   3. Nothing — skip silently; the SDK's default channel (no custom sound) is used.
+     *
+     * The channel ID follows the SDK convention: appsonair_push_channel_snd_<soundName>.
+     * createNotificationChannel() is a no-op if the channel already exists, so calling this
+     * on every engine attach is safe.
+     */
+    private fun createDefaultSoundChannelIfNeeded(context: Context) {
+        val soundName = metaDataSoundName(context) ?: fallbackSoundName(context) ?: return
+        AppPushService.Notifications.createNotificationChannel(
+            context = context,
+            id = "appsonair_push_channel_snd_$soundName",
+            name = "Push Notifications ($soundName)",
+            sound = soundName
+        )
+    }
+
+    /** Reads "com.appsonair.apppush.default_notification_sound" from AndroidManifest meta-data. */
+    private fun metaDataSoundName(context: Context): String? = try {
+        val ai = context.packageManager.getApplicationInfo(
+            context.packageName, android.content.pm.PackageManager.GET_META_DATA
+        )
+        ai.metaData?.getString("com.appsonair.apppush.default_notification_sound")
+            ?.takeIf { it.isNotBlank() }
+    } catch (_: Exception) { null }
+
+    /** Returns "custom_sound" if res/raw/custom_sound.* exists in the host app. */
+    private fun fallbackSoundName(context: Context): String? {
+        val name = "custom_sound"
+        val resId = context.resources.getIdentifier(name, "raw", context.packageName)
+        return if (resId != 0) name else null
+    }
 
     private fun wireErrorCode(code: PushError.Code): String = when (code) {
         PushError.Code.NOT_INITIALIZED -> "notInitialized"
