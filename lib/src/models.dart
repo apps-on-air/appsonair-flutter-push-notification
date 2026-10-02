@@ -221,7 +221,8 @@ typedef NotificationPermissionListener = void Function(bool granted);
 /// Fires when a push notification arrives while the app is in the foreground.
 /// Does not fire for background or silent (data-only) pushes — use
 /// [SilentPushListener] for those.
-typedef NotificationReceivedListener = void Function(PushNotification notification);
+typedef NotificationReceivedListener = void Function(
+    PushNotification notification);
 
 /// Signature for `AppPushService.setSilentPushListener`.
 ///
