@@ -94,7 +94,8 @@ class AppsOnAirNotificationsManager {
   }
 
   /// Removes a listener added with [addNotificationReceivedListener].
-  void removeNotificationReceivedListener(NotificationReceivedListener listener) {
+  void removeNotificationReceivedListener(
+      NotificationReceivedListener listener) {
     _receivedListeners.remove(listener);
   }
 

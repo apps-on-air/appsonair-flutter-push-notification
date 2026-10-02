@@ -1,0 +1,18 @@
+#!/bin/sh
+# Pre-push hook — mirrors the publish.yml CI checks so failures are caught
+# locally before reaching GitHub.
+
+set -e
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+echo "→ dart format check..."
+dart format --output=none --set-exit-if-changed .
+echo "  ✓ formatting OK"
+
+echo "→ flutter analyze..."
+flutter analyze --no-pub
+echo "  ✓ analyze OK"
+
+echo "Pre-push checks passed."
