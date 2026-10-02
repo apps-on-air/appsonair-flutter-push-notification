@@ -8,7 +8,7 @@ consent management, and debug logging — all through a single Dart API.
 > [!WARNING]
 > **Beta release — not yet recommended for production use.**
 >
-> `1.0.4-beta` is an early access release intended for evaluation, integration testing, and
+> `1.0.5-beta` is an early access release intended for evaluation, integration testing, and
 > prototype builds. Do not ship this version in a production app or a build with a large user base.
 >
 > - The public API may change between releases without a deprecation period.
@@ -21,9 +21,9 @@ consent management, and debug logging — all through a single Dart API.
 
 **Getting started** — [Requirements](#requirements) · [Features](#features) · [Installation](#installation) · [Android Setup](#android-setup) · [iOS Setup](#ios-setup) · [AppDelegate](#3-appdelegate--required) · [NSE](#4-notification-service-extension-nse--optional-for-rich-push) · [NCE](#5-notification-content-extension-nce--optional-for-expanded-long-press-view) · [Usage](#usage)
 
-**Guides** — [Debug Logging](#debug-logging) · [User Identity](#user-identity) · [Tags](#tags) · [Language](#language) · [Aliases](#aliases) · [Email](#email) · [Opt-in / Opt-out](#opt-in--opt-out) · [User Observers](#user-observers) · [Permission](#permission) · [Foreground Display](#foreground-display) · [Handling Taps](#handling-taps) · [Notification Management](#notification-management) · [Consent](#consent)
+**Guides** — [Debug Logging](#debug-logging) · [User Identity](#user-identity) · [Tags](#tags) · [Language](#language) · [Aliases](#aliases) · [Email](#email) · [Opt-in / Opt-out](#opt-in--opt-out) · [User Observers](#user-observers) · [Permission](#permission) · [Foreground Display](#foreground-display) · [Handling Taps](#handling-taps) · [Silent Push](#silent-push) · [Notification Management](#notification-management) · [Custom Sound (Android)](#custom-sound-android) · [Consent](#consent)
 
-**Reference** — [API Reference](#api-reference) · [Data Models](#data-models) · [Troubleshooting](#troubleshooting)
+**Reference** — [API Reference](#api-reference) · [Data Models](#data-models) · [Troubleshooting](#troubleshooting) · [iOS silent push](#ios--silent-push-not-received) · [Android silent push](#android--silent-push-not-received)
 
 ---
 
@@ -53,6 +53,8 @@ consent management, and debug logging — all through a single Dart API.
 | Consent Management | Gate all data collection on explicit user consent, for GDPR compliance. |
 | Permission Handling | Check, request, and observe the notification permission state. |
 | Notification Management | Remove individual delivered notifications, clear all, or remove a group (Android). |
+| Silent Push | Receive data-only background pushes without showing a notification banner. |
+| Custom Sound | Play a custom audio file for notifications. Drop a WAV/MP3/OGG file in `res/raw/` — the plugin creates the Android channel automatically. iOS uses the standard APNs sound key. |
 | Debug Logging | Configure SDK log verbosity for local development and diagnostics. |
 
 For complete documentation visit [documentation.appsonair.com](https://documentation.appsonair.com).
@@ -61,14 +63,20 @@ For complete documentation visit [documentation.appsonair.com](https://documenta
 
 ## Installation
 
-Add the plugin to your app's `pubspec.yaml`:
+Run in your project directory:
+
+```sh
+flutter pub add appsonair_flutter_apppush
+```
+
+Or add the dependency manually to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  appsonair_flutter_apppush: '>=1.0.4-beta'
+  appsonair_flutter_apppush: ^1.0.5-beta
 ```
 
-Run:
+Then run:
 
 ```sh
 flutter pub get
@@ -357,21 +365,9 @@ group name differs from that convention, the key is required.
 If you omit the App Group entirely, image attachments still work; delivery receipts and
 badge counting require it.
 
-**Step 5 — Enable mutable-content in your payloads**
+**Step 5 — Enable mutable-content**
 
-The NSE only runs when `mutable-content: 1` is present in the APNs payload:
-
-```json
-{
-  "aps": {
-    "alert": { "title": "Hello", "body": "World" },
-    "mutable-content": 1,
-    "sound": "default"
-  },
-  "notification_id": "your-notification-id",
-  "big_picture": "https://example.com/image.png"
-}
-```
+The NSE only runs when **mutable-content** is enabled on the push. Enable this option when sending from the AppsOnAir dashboard — it is required for image attachments, delivery receipts, and badge management to work.
 
 ### 5. Notification Content Extension (NCE) — optional, for expanded long-press view
 
@@ -493,23 +489,11 @@ Open the NCE target's `Info.plist`. Replace `NSExtensionMainStoryboard` with
 </dict>
 ```
 
-The `UNNotificationExtensionCategory` value (`aoa_rich` above) must exactly match the
-`"category"` field in your APNs payload's `aps` object.
+The `UNNotificationExtensionCategory` value set in the NCE `Info.plist` must exactly match the **category** value configured in the AppsOnAir dashboard when sending the push. Use `aoa_rich` (or any identifier you choose) — just ensure both the `Info.plist` and the dashboard use the same value.
 
-**Step 5 — Include `category` in your payloads**
+**Step 5 — Enable mutable-content and set the category from the dashboard**
 
-```json
-{
-  "aps": {
-    "alert": { "title": "NCE with Image", "body": "Long-press to see the full image." },
-    "mutable-content": 1,
-    "sound": "default",
-    "category": "aoa_rich"
-  },
-  "notification_id": "your-notification-id",
-  "big_picture": "https://example.com/image.png"
-}
-```
+When sending a push from the AppsOnAir dashboard, enable **mutable-content** and set the **category** to the same value as `UNNotificationExtensionCategory` in the NCE `Info.plist` (e.g. `aoa_rich`). The NCE is only triggered when these match.
 
 ### 6. Dependency manager
 
@@ -550,7 +534,7 @@ flutter config --enable-swift-package-manager
 ```
 
 Once enabled, `flutter pub get` resolves the native iOS SDK
-(`appsonair-ios-push-notification 1.0.4-beta` from GitHub) automatically.
+(`appsonair-ios-push-notification 1.0.5-beta` from GitHub) automatically.
 No Podfile or Xcode configuration is required.
 
 To switch back to CocoaPods at any time:
@@ -681,8 +665,8 @@ await AppPushService.User.removeAliases(['crm_id', 'stripe_id']);
 
 ## Email
 
-Associate an email address with this device for cross-channel messaging. Multiple addresses
-can be added and removed independently.
+Associate an email address with this device for cross-channel messaging. The backend keeps
+one email per subscription — calling `addEmail` again replaces the previous address.
 
 ```dart
 await AppPushService.User.addEmail('user@example.com');
@@ -801,6 +785,41 @@ AppPushService.Notifications.removeClickListener(listener);
 
 ---
 
+## Silent Push
+
+Silent pushes are data-only background notifications — no banner is shown to the user. They are
+useful for triggering in-app data sync, live-activity updates, or VoIP-style signalling.
+
+Register the listener **before** `initialize()` so pushes that wake the app in the background
+are not missed. Only one listener is active at a time — each call replaces the previous one.
+Pass `null` to unregister.
+
+```dart
+// Call BEFORE initialize() — background wakeup pushes arrive before Dart finishes starting up.
+AppPushService.setSilentPushListener((Map<String, dynamic> data) {
+  print('Silent push received: $data');
+});
+
+await AppPushService.initialize();
+```
+
+### Platform setup
+
+**iOS** — enable the **Background Modes → Remote notifications** capability in Xcode (Runner
+target → Signing & Capabilities). Without this entitlement iOS will not wake the app for silent
+pushes. No `AppDelegate` changes are required — the plugin forwards silent pushes to the SDK
+internally.
+
+**Android** — no additional setup required. The SDK intercepts data-only FCM messages
+automatically.
+
+> For device and OS conditions that can prevent silent push delivery (Low Power Mode, kill mode,
+> Doze, manufacturer battery savers, etc.) see
+> [iOS — silent push not received](#ios--silent-push-not-received) and
+> [Android — silent push not received](#android--silent-push-not-received) in Troubleshooting.
+
+---
+
 ## Notification Management
 
 ```dart
@@ -813,6 +832,61 @@ await AppPushService.Notifications.removeNotification('notification-id');
 // Android only — remove every notification belonging to a group key
 await AppPushService.Notifications.removeGroupedNotifications('orders');
 ```
+
+---
+
+## Custom Sound (Android)
+
+The plugin automatically creates a custom-sound notification channel on Android 8+ when a
+`custom_sound` audio file is present in your app's `res/raw/` folder. No Kotlin or Dart
+code is required.
+
+**Step 1 — Add the sound file**
+
+Place a WAV, MP3, or OGG file named `custom_sound` in:
+
+```
+android/app/src/main/res/raw/custom_sound.wav
+```
+
+That is all the setup needed. The plugin detects the file at startup and pre-creates the channel
+with the ID `appsonair_push_channel_snd_custom_sound`.
+
+**Step 2 — Set as the FCM default channel (optional)**
+
+To make Firebase-rendered (notification-block) messages also use the custom sound, add to
+`AndroidManifest.xml` inside `<application>`:
+
+```xml
+<meta-data
+    android:name="com.google.firebase.messaging.default_notification_channel_id"
+    android:value="appsonair_push_channel_snd_custom_sound" />
+```
+
+**Step 3 — Send a push with the sound key**
+
+For data-only (SDK-rendered) notifications, set `"sound": "custom_sound"` in the push data map
+from the AppsOnAir dashboard or API.
+
+> **Using a different sound name?** Add a manifest meta-data key to override the auto-detected
+> name — the plugin reads this instead of looking for `custom_sound`:
+>
+> ```xml
+> <meta-data
+>     android:name="com.appsonair.apppush.default_notification_sound"
+>     android:value="my_alert" />
+> ```
+>
+> Then place `android/app/src/main/res/raw/my_alert.wav` in your project.
+
+> **Channel sound is immutable on Android 8+.** A notification channel's sound cannot be changed
+> after it is created. To change the sound, uninstall the app (or clear app data) and reinstall,
+> or use a different channel ID. This is an Android OS constraint — it applies to all apps, not
+> just this SDK.
+
+> **iOS custom sound** — place the sound file in the Xcode Runner target (e.g.
+> `ios/Runner/custom_sound.wav`) and reference it in the push payload:
+> `"aps": { "sound": "custom_sound.wav" }`. No additional SDK setup is needed on iOS.
 
 ---
 
@@ -842,6 +916,7 @@ await AppPushService.setConsentGiven(false);  // user withdrew consent
 | `logout()` | Removes the user association and reverts the device to anonymous. |
 | `setConsentRequired(bool)` | Gates data collection on user consent. Call before `initialize()`. |
 | `setConsentGiven(bool)` | Records whether the user has accepted (`true`) or withdrawn (`false`) consent. |
+| `setSilentPushListener(listener)` | Registers a listener for silent (data-only) push notifications. Call before `initialize()`. Pass `null` to unregister. Only one listener is active at a time. |
 
 ### AppPushService.User
 
@@ -888,6 +963,8 @@ await AppPushService.setConsentGiven(false);  // user withdrew consent
 | `removePermissionObserver(observer)` | Removes a permission observer. |
 | `addForegroundWillDisplayListener(listener)` | Controls foreground notification display. Call `event.preventDefault()` synchronously to suppress. |
 | `removeForegroundWillDisplayListener(listener)` | Removes a foreground display listener. |
+| `addNotificationReceivedListener(listener)` | Fires when a notification is received while the app is in the foreground, after the display decision. Does not fire for silent pushes. |
+| `removeNotificationReceivedListener(listener)` | Removes a notification received listener. |
 | `addClickListener(listener)` | Observes notification taps and action button taps. |
 | `removeClickListener(listener)` | Removes a click listener. |
 | `clearAll()` | Removes all delivered notifications from the notification shade / Notification Center. |
@@ -954,6 +1031,20 @@ await AppPushService.setConsentGiven(false);  // user withdrew consent
 4. Verify `AppsonairAppId` is declared in `AndroidManifest.xml`.
 5. Set `LogLevel.verbose` and inspect logcat output for SDK diagnostic messages.
 
+### Android — silent push not received
+
+The following device and OS conditions can prevent silent push delivery regardless of correct SDK integration.
+
+| Condition | Behaviour |
+|---|---|
+| **Doze mode** | Android 6+ enters Doze when the device is stationary, unplugged, and the screen is off. All background network access is suspended. FCM high-priority messages can break through Doze; normal-priority messages are deferred until the next maintenance window. |
+| **App Standby buckets** | Android 9+ places apps the user has not interacted with recently into standby buckets. Background processing for rarely-used apps is progressively restricted — silent pushes may be deferred or dropped. |
+| **Battery optimization** | If battery optimization is enabled for the app (Settings → Apps → [Your App] → Battery → Optimized), Android may delay or skip background wake-ups. Users should set it to **Unrestricted** for reliable silent push delivery. |
+| **Background data restricted** | If the user has disabled background data for the app (Settings → Apps → [Your App] → Mobile data → Background data), FCM cannot deliver messages while the app is in the background on mobile data. |
+| **App force-stopped** | If the user force-stops the app via Settings, Android will not wake it for any push — including high-priority FCM — until the user relaunches it manually. This is an Android OS policy and cannot be worked around in code. |
+| **Manufacturer battery savers** | Xiaomi/MIUI, Huawei/EMUI, Samsung/One UI, OnePlus/OxygenOS, and Oppo/ColorOS add proprietary battery management on top of stock Android. These layers can kill background processes and block push delivery even for high-priority messages. Users may need to add the app to an **Autostart** or **Protected apps** whitelist in the device's battery settings. |
+| **No network / poor signal** | FCM holds messages offline until the device reconnects, up to the `time_to_live` window in the payload (default 4 weeks). |
+
 ### iOS — APNs token not received
 
 1. Verify the **Push Notifications** capability is enabled in Xcode.
@@ -965,6 +1056,19 @@ await AppPushService.setConsentGiven(false);  // user withdrew consent
 ### iOS — notification tap not handled (kill mode)
 
 Tapping a notification that cold-launches the app fires `didReceive` before Dart runs and before `initialize()` is called. The `FlutterImplicitEngineDelegate` pattern handles this automatically — the plugin registers itself as `UNUserNotificationCenter` delegate in `didInitializeImplicitFlutterEngine`, before Dart starts. Verify `AppDelegate.swift` matches the pattern in [AppDelegate](#3-appdelegate).
+
+### iOS — silent push not received
+
+The following device and OS conditions can prevent silent push delivery regardless of correct SDK integration.
+
+| Condition | Behaviour |
+|---|---|
+| **Low Power Mode** | iOS suspends background app refresh and silent push delivery entirely while Low Power Mode is active. Delivery resumes when Low Power Mode is turned off or the device is charging. |
+| **Background App Refresh disabled** | If the user has turned off Background App Refresh for the app (Settings → General → Background App Refresh → [Your App]), iOS will not wake the app for silent pushes. |
+| **App force-quit (kill mode)** | If the user swipes the app off the App Switcher, iOS will not deliver silent pushes to it until the user manually relaunches the app. This is an iOS OS policy and cannot be worked around in code. |
+| **iOS rate limiting** | Apple allows only a limited number of silent pushes per hour per device. If too many are sent in a short window, excess pushes are deferred or dropped silently. |
+| **Low battery** | As battery level drops (roughly below 20 %), iOS becomes more aggressive at deferring background work even without Low Power Mode enabled. |
+| **No network / poor signal** | Silent pushes require network connectivity. APNs holds the push until the device reconnects, up to the `apns-expiration` window in the request. |
 
 ### iOS — CocoaPods and Swift Package Manager conflict
 

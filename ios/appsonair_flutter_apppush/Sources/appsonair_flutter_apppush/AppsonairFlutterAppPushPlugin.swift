@@ -8,9 +8,11 @@ public class AppsonairFlutterAppPushPlugin: NSObject, FlutterPlugin, FlutterStre
 
   private var eventSink: FlutterEventSink?
 
-  // Kill-mode tap buffer: click events that fire before the Dart event stream
-  // connects are queued here and flushed the moment onListen() is called.
-  private var pendingClickEvents: [[String: Any]] = []
+  // Generic event buffer: any event that fires before the Dart event stream
+  // connects (onListen) is queued here and flushed the moment onListen() is
+  // called. This mirrors Android's pendingEvents and is critical for silent
+  // pushes that arrive while the Flutter engine is still starting up.
+  private var pendingEvents: [[String: Any]] = []
 
   private var pendingWillDisplayEvents: [String: NotificationWillDisplayEvent] = [:]
 
@@ -46,6 +48,24 @@ public class AppsonairFlutterAppPushPlugin: NSObject, FlutterPlugin, FlutterStre
     AppPushService.User.pushSubscription.addObserver(instance)
     AppPushService.User.addObserver(instance)
 
+    // Register for UIApplicationDelegate callbacks so the plugin can forward
+    // silent pushes to the SDK without requiring any AppDelegate changes.
+    registrar.addApplicationDelegate(instance)
+
+    // Silent push (content-available: 1). The completion handler is called
+    // immediately with .newData so iOS does not penalise the app for a missing
+    // call — Dart has no mechanism to signal completion back to the OS within
+    // the ~30 s background window.
+    AppPushService.onSilentPushReceived = { [weak instance] userInfo, completion in
+      // Cast [AnyHashable: Any] → [String: Any] — Flutter event channel codec
+      // cannot encode AnyHashable keys and silently drops the event without this.
+      let data = userInfo.reduce(into: [String: Any]()) { result, pair in
+        if let key = pair.key.base as? String { result[key] = pair.value }
+      }
+      instance?.sendEvent(["type": "silentPushReceived", "data": data])
+      completion(.newData)
+    }
+
     // Install this instance as the UNUserNotificationCenterDelegate NOW, while
     // we are still inside didFinishLaunchingWithOptions. iOS delivers the
     // kill-mode didReceive(_:withCompletionHandler:) on the very first run-loop
@@ -62,12 +82,24 @@ public class AppsonairFlutterAppPushPlugin: NSObject, FlutterPlugin, FlutterStre
     }
   }
 
+  /// Sends an event to the Dart event stream. If the stream is not yet
+  /// connected (eventSink is nil), the event is buffered and flushed the
+  /// moment onListen() is called — matching Android's pendingEvents behaviour.
+  private func sendEvent(_ event: [String: Any]) {
+    if let sink = eventSink {
+      sink(event)
+    } else {
+      pendingEvents.append(event)
+    }
+  }
+
   public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
     eventSink = events
-    // Flush any click events buffered before the Dart stream was ready (kill-mode taps).
-    let pending = pendingClickEvents
-    pendingClickEvents.removeAll()
-    pending.forEach { events($0) }
+    // Flush all events buffered before the Dart stream was ready
+    // (e.g. silent pushes or click events that arrived before initialize() ran).
+    let buffered = pendingEvents
+    pendingEvents.removeAll()
+    buffered.forEach { events($0) }
     return nil
   }
 
@@ -213,6 +245,22 @@ public class AppsonairFlutterAppPushPlugin: NSObject, FlutterPlugin, FlutterStre
   }
 }
 
+// MARK: - UIApplicationDelegate (silent push)
+
+// Registered via registrar.addApplicationDelegate() so the Flutter engine
+// forwards application:didReceiveRemoteNotification:fetchCompletionHandler:
+// to this plugin — no AppDelegate changes required from the developer.
+extension AppsonairFlutterAppPushPlugin {
+  public func application(
+    _ application: UIApplication,
+    didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+    fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+  ) -> Bool {
+    AppPushService.handleSilentPush(userInfo, fetchCompletionHandler: completionHandler)
+    return true
+  }
+}
+
 // MARK: - UNUserNotificationCenterDelegate
 
 // The plugin sets itself as UNUserNotificationCenter.current().delegate in
@@ -257,19 +305,19 @@ extension AppsonairFlutterAppPushPlugin: @preconcurrency UNUserNotificationCente
 
 extension AppsonairFlutterAppPushPlugin: PushListener {
   public func onAPNsTokenUpdated(token: String, environment: APNsEnvironment) {
-    eventSink?(["type": "tokenUpdated", "token": token, "environment": environment.rawValue])
+    sendEvent(["type": "tokenUpdated", "token": token, "environment": environment.rawValue])
   }
 
   public func onNotificationReceived(notification: PushNotification) {
-    eventSink?(["type": "notificationReceived", "notification": notification.toMap()])
+    sendEvent(["type": "notificationReceived", "notification": notification.toMap()])
   }
 
   public func onNotificationOpened(notification: PushNotification) {
-    eventSink?(["type": "notificationOpened", "notification": notification.toMap()])
+    sendEvent(["type": "notificationOpened", "notification": notification.toMap()])
   }
 
   public func onError(_ error: PushError) {
-    eventSink?(["type": "error", "code": error.code.rawValue, "message": error.message])
+    sendEvent(["type": "error", "code": error.code.rawValue, "message": error.message])
   }
 }
 
@@ -277,7 +325,7 @@ extension AppsonairFlutterAppPushPlugin: NotificationLifecycleListener {
   public func onWillDisplay(event: NotificationWillDisplayEvent) {
     let eventId = UUID().uuidString
     pendingWillDisplayEvents[eventId] = event
-    eventSink?([
+    sendEvent([
       "type": "notificationWillDisplay",
       "eventId": eventId,
       "notification": event.notification.toMap(),
@@ -292,24 +340,19 @@ extension AppsonairFlutterAppPushPlugin: NotificationClickListener {
       "notification": event.notification.toMap(),
       "actionId": event.result.actionId as Any,
     ]
-    guard let sink = eventSink else {
-      // Dart stream not yet connected (kill-mode tap) — buffer until onListen fires.
-      pendingClickEvents.append(payload)
-      return
-    }
-    sink(payload)
+    sendEvent(payload)
   }
 }
 
 extension AppsonairFlutterAppPushPlugin: NotificationPermissionObserver {
   public func onNotificationPermissionDidChange(_ permission: Bool) {
-    eventSink?(["type": "permissionChanged", "granted": permission])
+    sendEvent(["type": "permissionChanged", "granted": permission])
   }
 }
 
 extension AppsonairFlutterAppPushPlugin: PushSubscriptionObserver {
   public func onPushSubscriptionDidChange(state: PushSubscriptionChangedState) {
-    eventSink?([
+    sendEvent([
       "type": "subscriptionChanged",
       "previous": ["token": state.previous.token as Any, "isOptedIn": state.previous.optedIn],
       "current": ["token": state.current.token as Any, "isOptedIn": state.current.optedIn],
@@ -319,7 +362,7 @@ extension AppsonairFlutterAppPushPlugin: PushSubscriptionObserver {
 
 extension AppsonairFlutterAppPushPlugin: UserStateObserver {
   public func onUserStateDidChange(state: UserChangedState) {
-    eventSink?([
+    sendEvent([
       "type": "userChanged",
       "externalId": state.current.externalId as Any,
       "appsonairId": state.current.appsOnAirId,

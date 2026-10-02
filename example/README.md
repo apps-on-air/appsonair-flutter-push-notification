@@ -9,9 +9,12 @@ A minimal working example that demonstrates the
 - Requesting notification permission
 - Adding and removing tags
 - Login and logout (user identity)
-- Adding aliases and email
+- Adding aliases
+- Adding and removing email
 - Opt-in / opt-out
 - Observing foreground notifications, notification taps, subscription state, and user state
+- Silent push (data-only background notifications) via `setSilentPushListener`
+- Custom notification sound (Android) via `res/raw/custom_sound.wav`
 
 ---
 
@@ -113,11 +116,78 @@ flutter run -d <your-android-device-id>
 
 ---
 
-## Verify it's working
+## What to test
 
-1. Run the app — the **Device ID** field should populate within a few seconds.
-2. Check the AppsOnAir dashboard — the device should appear under **Devices**.
-3. Send a test push from the dashboard.
-4. **Foreground:** banner appears + `Will display` logged.
-5. **Background tap:** `Tapped` logged.
-6. **Kill-mode tap:** cold-launch → `Tapped` logged (handled automatically by `FlutterImplicitEngineDelegate`).
+### Device registration
+
+1. Run the app — the **Device ID** field populates within a few seconds.
+2. Check the AppsOnAir dashboard — the device appears under **Devices**.
+
+### Regular push
+
+1. Send a test push from the AppsOnAir dashboard.
+2. **Foreground:** banner appears + `Will display: <title>` logged.
+3. **Background tap:** `Tapped: <title>` logged.
+4. **Kill-mode tap:** cold-launch → `Tapped: <title>` logged (handled by `FlutterImplicitEngineDelegate`).
+
+### Email
+
+Tap **Add email** → `addEmail(user@example.com)` logged.
+Verify the email appears in the dashboard against the device.
+
+Tap **Remove email** → `removeEmail(user@example.com)` logged.
+Verify the email is cleared in the dashboard.
+
+### Silent push
+
+Tap the push from the dashboard (or send via API with no notification block).
+
+- **Android:** send a data-only FCM message with `"silent": "true"` in the data map.
+- **iOS:** send with `content-available: 1`, `apns-push-type: background`, `apns-priority: 5`.
+
+`Silent push received: {...}` appears in the event log on screen.
+
+> The listener is registered in `lib/main.dart` **before** `initialize()` — this is required
+> so background-wakeup pushes are not missed.
+
+### Custom sound (Android only)
+
+A `custom_sound.wav` file is included in `android/app/src/main/res/raw/`. The plugin
+creates the notification channel automatically on first launch.
+
+Send a push from the dashboard with the data key `"sound": "custom_sound"` — the custom
+tone plays instead of the device default.
+
+Verify the channel in **Settings → Apps → [example app] → Notifications** — you should
+see a **Push Notifications (custom sound)** channel.
+
+### Tags
+
+Tap **Add tag** → tag `favorite_color=blue` is added.
+Tap **Remove tag** → tag is removed.
+Verify tag changes appear in the dashboard under the device.
+
+### Login / Logout
+
+Tap **Login** → `login(demo-user-123)` logged, `User changed` event fires.
+Tap **Logout** → `logout()` logged, user reverts to anonymous.
+
+### Opt-in / Opt-out
+
+Tap **Opt out** → device stops receiving pushes (token is preserved).
+Tap **Opt in** → delivery resumes immediately.
+
+---
+
+## Silent push — platform notes
+
+### iOS
+
+The **Background Modes → Remote notifications** capability must be enabled in Xcode (Runner
+target → Signing & Capabilities). No `AppDelegate` code is required — the plugin handles
+silent push forwarding internally.
+
+### Android
+
+No additional setup required. Send a data-only FCM message (no `notification` block) with
+`"silent": "true"` in the data map.

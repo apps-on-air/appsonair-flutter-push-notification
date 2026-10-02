@@ -31,6 +31,13 @@ class _MyAppState extends State<MyApp> {
   Future<void> _init() async {
     // Set log level before initialize() so early SDK messages are captured.
     await AppPushService.Debug.setLogLevel(LogLevel.verbose);
+
+    // Register the silent push listener BEFORE initialize() so pushes that
+    // wake the app in the background are not missed.
+    AppPushService.setSilentPushListener((data) {
+      _appendLog('Silent push received: $data');
+    });
+
     // swizzle: false is required for Flutter — the manual AppDelegate overrides
     // in ios/Runner/AppDelegate.swift handle APNs callbacks instead.
     await AppPushService.initialize(swizzle: false);
@@ -150,6 +157,13 @@ class _MyAppState extends State<MyApp> {
                       _appendLog('addEmail(user@example.com)');
                     },
                     child: const Text('Add email'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      AppPushService.User.removeEmail('user@example.com');
+                      _appendLog('removeEmail(user@example.com)');
+                    },
+                    child: const Text('Remove email'),
                   ),
                   ElevatedButton(
                     onPressed: () {
