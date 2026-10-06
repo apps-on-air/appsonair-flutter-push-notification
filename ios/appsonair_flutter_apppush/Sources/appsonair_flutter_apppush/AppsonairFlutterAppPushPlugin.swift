@@ -52,10 +52,12 @@ public class AppsonairFlutterAppPushPlugin: NSObject, FlutterPlugin, FlutterStre
     // silent pushes to the SDK without requiring any AppDelegate changes.
     registrar.addApplicationDelegate(instance)
 
-    // Silent push (content-available: 1). The completion handler is called
-    // immediately with .newData so iOS does not penalise the app for a missing
-    // call — Dart has no mechanism to signal completion back to the OS within
-    // the ~30 s background window.
+    // Silent push (content-available: 1).
+    // The completion handler is deferred to the next main-actor turn so the SDK's
+    // EventQueue.flush() Task (also @MainActor) gets to execute and fire the
+    // POST /v1/events/delivered call before iOS suspends the app. Calling completion
+    // immediately (as we did before) let iOS suspend the process before flush() ran,
+    // silently dropping the delivery receipt in the background case.
     AppPushService.onSilentPushReceived = { [weak instance] userInfo, completion in
       // Cast [AnyHashable: Any] → [String: Any] — Flutter event channel codec
       // cannot encode AnyHashable keys and silently drops the event without this.
@@ -63,7 +65,8 @@ public class AppsonairFlutterAppPushPlugin: NSObject, FlutterPlugin, FlutterStre
         if let key = pair.key.base as? String { result[key] = pair.value }
       }
       instance?.sendEvent(["type": "silentPushReceived", "data": data])
-      completion(.newData)
+      // Defer completion to next run-loop turn so flush()'s Task runs first.
+      Task { @MainActor in completion(.newData) }
     }
 
     // Install this instance as the UNUserNotificationCenterDelegate NOW, while

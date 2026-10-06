@@ -87,10 +87,9 @@ Open `example/ios/Runner.xcworkspace` in Xcode:
 
 ### 3. AppDelegate
 
-`example/ios/Runner/AppDelegate.swift` already contains the required setup.
-No changes needed — it uses `FlutterImplicitEngineDelegate` which registers the plugin
-as the `UNUserNotificationCenter` delegate early enough to capture kill-mode notification taps
-before Dart's `AppPushService.initialize()` runs.
+No changes needed — the standard Flutter `AppDelegate.swift` is all that's required.
+The plugin automatically registers itself as the `UNUserNotificationCenter` delegate,
+handles silent push forwarding, and captures kill-mode notification taps internally.
 
 ### 4. iOS dependency (no action required)
 
@@ -128,7 +127,7 @@ flutter run -d <your-android-device-id>
 1. Send a test push from the AppsOnAir dashboard.
 2. **Foreground:** banner appears + `Will display: <title>` logged.
 3. **Background tap:** `Tapped: <title>` logged.
-4. **Kill-mode tap:** cold-launch → `Tapped: <title>` logged (handled by `FlutterImplicitEngineDelegate`).
+4. **Kill-mode tap:** cold-launch → `Tapped: <title>` logged (handled automatically by the plugin).
 
 ### Email
 
