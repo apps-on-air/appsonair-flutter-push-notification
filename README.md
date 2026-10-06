@@ -286,7 +286,7 @@ In Xcode: **File → New → Target → Notification Service Extension**. Name i
 ```ruby
 target 'AppsonairNotificationServiceExtension' do
   use_frameworks!
-  pod 'AppsOnAir-AppPush-ServiceExt'
+  pod 'AppsOnAir-AppPush-ServiceExt', '1.0.6-beta'
 end
 ```
 
@@ -373,7 +373,7 @@ In Xcode: **File → New → Target → Notification Content Extension**. Name i
 ```ruby
 target 'AppsonairNotificationContentExtension' do
   use_frameworks!
-  pod 'AppsOnAir-AppPush-ContentExt'
+  pod 'AppsOnAir-AppPush-ContentExt', '1.0.6-beta'
 end
 ```
 
@@ -514,12 +514,12 @@ end
 
 target 'AppsonairNotificationServiceExtension' do
   use_frameworks!
-  pod 'AppsOnAir-AppPush-ServiceExt'
+  pod 'AppsOnAir-AppPush-ServiceExt', '1.0.6-beta'
 end
 
 target 'AppsonairNotificationContentExtension' do
   use_frameworks!
-  pod 'AppsOnAir-AppPush-ContentExt'
+  pod 'AppsOnAir-AppPush-ContentExt', '1.0.6-beta'
 end
 ```
 
@@ -1115,8 +1115,8 @@ pod 'AppsOnAir-AppPush/ServiceExtension'
 pod 'AppsOnAir-AppPush/ContentExtension'
 
 # ✅ Correct — standalone pods with separate module names
-pod 'AppsOnAir-AppPush-ServiceExt'
-pod 'AppsOnAir-AppPush-ContentExt'
+pod 'AppsOnAir-AppPush-ServiceExt', '1.0.6-beta'
+pod 'AppsOnAir-AppPush-ContentExt', '1.0.6-beta'
 ```
 
 ### iOS — `CFPrefsPlistSource` warning on device
