@@ -1,3 +1,10 @@
+## 1.0.8-beta
+
+* Bumped minimum native iOS dependency to AppsOnAir-AppPush 1.0.9-beta
+* Bumped minimum AppsOnAir-Core dependency to 1.3.0
+* Updated minimum Dart SDK requirement to 3.13.7 (security patch)
+* Raised minimum iOS deployment target to 15.0
+
 ## 1.0.7-beta
 - Minor Documentation changes.
 

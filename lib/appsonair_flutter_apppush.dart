@@ -37,6 +37,7 @@ class AppPushService {
 
   static StreamSubscription<Map<Object?, Object?>>? _subscription;
   static SilentPushListener? _silentPushListener;
+  static final List<PushErrorListener> _errorListeners = [];
 
   static void _ensureEventBridge() {
     if (_subscription != null) return;
@@ -85,13 +86,18 @@ class AppPushService {
         // arrives — this is separate from subscriptionChanged and happens
         // earlier (e.g. "subscription deferred" at init). Synthesise a
         // subscription-changed dispatch so all addObserver listeners fire.
-        User.pushSubscription.dispatch(PushSubscriptionChangedState(
-          previous: const PushSubscriptionState(token: null, isOptedIn: false),
-          current: PushSubscriptionState(
-            token: raw['token'] as String?,
-            isOptedIn: true,
+        User.pushSubscription.dispatch(
+          PushSubscriptionChangedState(
+            previous: const PushSubscriptionState(
+              token: null,
+              isOptedIn: false,
+            ),
+            current: PushSubscriptionState(
+              token: raw['token'] as String?,
+              isOptedIn: true,
+            ),
           ),
-        ));
+        );
         break;
       case 'subscriptionChanged':
         User.pushSubscription.dispatch(
@@ -100,6 +106,12 @@ class AppPushService {
         break;
       case 'userChanged':
         User.dispatch(UserChangedState.fromMap(raw));
+        break;
+      case 'error':
+        final error = PushError.fromMap(raw);
+        for (final listener in List.of(_errorListeners)) {
+          listener(error);
+        }
         break;
     }
   }
@@ -135,6 +147,18 @@ class AppPushService {
   /// Records whether the user has given (`true`) or withdrawn (`false`) consent.
   static Future<void> setConsentGiven(bool value) =>
       _platform.setConsentGiven(value);
+
+  /// Registers a listener for SDK errors (e.g. permission denied, APNs / FCM
+  /// registration failures). Multiple listeners may be active simultaneously.
+  static void addErrorListener(PushErrorListener listener) {
+    _ensureEventBridge();
+    _errorListeners.add(listener);
+  }
+
+  /// Removes a listener added with [addErrorListener].
+  static void removeErrorListener(PushErrorListener listener) {
+    _errorListeners.remove(listener);
+  }
 
   /// Registers a listener for silent (data-only) push notifications.
   ///

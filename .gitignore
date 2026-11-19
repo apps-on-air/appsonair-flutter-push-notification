@@ -40,3 +40,5 @@ example/ios/Runner.xcworkspace/xcshareddata/swiftpm/Package.resolved
 # Internal development reference — not for public repository
 Flutter_SDK_INTERNAL.md
 release_notes.md
+local_dev.config
+local_dev.sh

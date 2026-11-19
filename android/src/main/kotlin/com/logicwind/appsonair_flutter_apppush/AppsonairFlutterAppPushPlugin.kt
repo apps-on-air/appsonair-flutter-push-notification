@@ -270,7 +270,6 @@ class AppsonairFlutterAppPushPlugin :
                     PushUser.removeEmail(call.argument<String>("address") ?: "")
                     result.success(null)
                 }
-
                 "notifications#permission" ->
                     result.success(PushNotifications.permission(applicationContext))
                 "notifications#canRequestPermission" ->
