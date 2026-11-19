@@ -209,7 +209,8 @@ class UserChangedState {
 
 /// Signature for `AppsOnAirNotificationsManager.addForegroundWillDisplayListener`.
 typedef NotificationWillDisplayListener = void Function(
-    NotificationWillDisplayEvent event);
+  NotificationWillDisplayEvent event,
+);
 
 /// Signature for `AppsOnAirNotificationsManager.addClickListener`.
 typedef NotificationClickListener = void Function(NotificationClickEvent event);
@@ -222,7 +223,8 @@ typedef NotificationPermissionListener = void Function(bool granted);
 /// Does not fire for background or silent (data-only) pushes — use
 /// [SilentPushListener] for those.
 typedef NotificationReceivedListener = void Function(
-    PushNotification notification);
+  PushNotification notification,
+);
 
 /// Signature for `AppPushService.setSilentPushListener`.
 ///
@@ -241,7 +243,89 @@ typedef SilentPushListener = void Function(Map<String, dynamic> data);
 
 /// Signature for `AppsOnAirPushSubscription.addObserver`.
 typedef PushSubscriptionListener = void Function(
-    PushSubscriptionChangedState state);
+  PushSubscriptionChangedState state,
+);
 
 /// Signature for `AppsOnAirUserManager.addObserver`.
 typedef UserStateListener = void Function(UserChangedState state);
+
+/// Identifies the category of an SDK error.
+///
+/// Platform availability is noted per value — callers should handle [unknown]
+/// as a catch-all for codes added in future native SDK releases.
+enum PushErrorCode {
+  /// SDK API called before [AppPushService.initialize].
+  notInitialized,
+
+  /// Notification permission not granted by the user.
+  permissionDenied,
+
+  /// APNs token registration failed — iOS only.
+  apnsRegistrationFailed,
+
+  /// No APNs callback received after registering; another library may be
+  /// proxying the AppDelegate — iOS only.
+  apnsCallbackNotReceived,
+
+  /// `google-services.json` or the Firebase plugin is missing — Android only.
+  firebaseNotConfigured,
+
+  /// FCM token request failed — Android only.
+  tokenFetchFailed,
+
+  /// Firebase Installation ID unavailable — Android only.
+  installationIdFetchFailed,
+
+  /// Unclassified error, or a code added by a newer native SDK not yet
+  /// recognised by this Dart package. Check [PushError.rawCode] for the
+  /// original string value.
+  unknown;
+
+  static PushErrorCode _fromString(String? value) {
+    return PushErrorCode.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => PushErrorCode.unknown,
+    );
+  }
+}
+
+/// An SDK error delivered to listeners registered via
+/// [AppPushService.addErrorListener].
+///
+/// Use [code] (a typed enum) for logic; use [rawCode] if you need to log or
+/// forward the original string from the native side — useful when [code] is
+/// [PushErrorCode.unknown] and you want to see exactly what the native SDK sent.
+class PushError {
+  const PushError({
+    required this.code,
+    required this.rawCode,
+    required this.message,
+  });
+
+  factory PushError.fromMap(Map<Object?, Object?> map) {
+    final raw = map['code'] as String? ?? 'unknown';
+    return PushError(
+      code: PushErrorCode._fromString(raw),
+      rawCode: raw,
+      message: map['message'] as String? ?? '',
+    );
+  }
+
+  /// Typed error code — use this for all conditional logic.
+  final PushErrorCode code;
+
+  /// The original string sent by the native SDK. Identical to `code.name`
+  /// for known codes; preserved as-is for [PushErrorCode.unknown] so no
+  /// information is lost when the native SDK adds a new code before this
+  /// package is updated.
+  final String rawCode;
+
+  /// Human-readable description from the native SDK.
+  final String message;
+
+  @override
+  String toString() => 'PushError($rawCode: $message)';
+}
+
+/// Signature for [AppPushService.addErrorListener].
+typedef PushErrorListener = void Function(PushError error);

@@ -8,7 +8,7 @@ consent management, and debug logging — all through a single Dart API.
 > [!WARNING]
 > **Beta release — not yet recommended for production use.**
 >
-> `1.0.6-beta` is an early access release intended for evaluation, integration testing, and
+> `1.0.8-beta` is an early access release intended for evaluation, integration testing, and
 > prototype builds. Do not ship this version in a production app or a build with a large user base.
 >
 > - The public API may change between releases without a deprecation period.
@@ -33,8 +33,8 @@ consent management, and debug logging — all through a single Dart API.
 |---|---|
 | Android | API 24 (Android 7.0) |
 | iOS | 15.0 |
-| Flutter | 3.16.0 |
-| Dart SDK | 3.2.0 |
+| Flutter | 3.47.8 |
+| Dart SDK | 3.13.7 |
 
 ---
 
@@ -73,7 +73,7 @@ Or add the dependency manually to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  appsonair_flutter_apppush: ^1.0.6-beta
+  appsonair_flutter_apppush: ^1.0.8-beta
 ```
 
 Then run:
@@ -286,7 +286,7 @@ In Xcode: **File → New → Target → Notification Service Extension**. Name i
 ```ruby
 target 'AppsonairNotificationServiceExtension' do
   use_frameworks!
-  pod 'AppsOnAir-AppPush-ServiceExt', '1.0.6-beta'
+  pod 'AppsOnAir-AppPush-ServiceExt', '1.0.9-beta'
 end
 ```
 
@@ -373,7 +373,7 @@ In Xcode: **File → New → Target → Notification Content Extension**. Name i
 ```ruby
 target 'AppsonairNotificationContentExtension' do
   use_frameworks!
-  pod 'AppsOnAir-AppPush-ContentExt', '1.0.6-beta'
+  pod 'AppsOnAir-AppPush-ContentExt', '1.0.9-beta'
 end
 ```
 
@@ -514,12 +514,12 @@ end
 
 target 'AppsonairNotificationServiceExtension' do
   use_frameworks!
-  pod 'AppsOnAir-AppPush-ServiceExt', '1.0.6-beta'
+  pod 'AppsOnAir-AppPush-ServiceExt', '1.0.9-beta'
 end
 
 target 'AppsonairNotificationContentExtension' do
   use_frameworks!
-  pod 'AppsOnAir-AppPush-ContentExt', '1.0.6-beta'
+  pod 'AppsOnAir-AppPush-ContentExt', '1.0.9-beta'
 end
 ```
 
@@ -538,7 +538,7 @@ flutter config --enable-swift-package-manager
 ```
 
 Once enabled, `flutter pub get` resolves the native iOS SDK
-(`appsonair-ios-push-notification 1.0.6-beta` from GitHub) automatically.
+(`appsonair-ios-push-notification` from GitHub) automatically.
 No Podfile or Xcode configuration is required.
 
 To switch back to CocoaPods at any time:
@@ -1115,8 +1115,8 @@ pod 'AppsOnAir-AppPush/ServiceExtension'
 pod 'AppsOnAir-AppPush/ContentExtension'
 
 # ✅ Correct — standalone pods with separate module names
-pod 'AppsOnAir-AppPush-ServiceExt', '1.0.6-beta'
-pod 'AppsOnAir-AppPush-ContentExt', '1.0.6-beta'
+pod 'AppsOnAir-AppPush-ServiceExt', '1.0.9-beta'
+pod 'AppsOnAir-AppPush-ContentExt', '1.0.9-beta'
 ```
 
 ### iOS — `CFPrefsPlistSource` warning on device

@@ -204,7 +204,6 @@ public class AppsonairFlutterAppPushPlugin: NSObject, FlutterPlugin, FlutterStre
     case "user#removeEmail":
       AppPushService.User.removeEmail(args?["address"] as? String ?? "")
       result(nil)
-
     case "notifications#permission":
       result(AppPushService.Notifications.permission)
     case "notifications#canRequestPermission":

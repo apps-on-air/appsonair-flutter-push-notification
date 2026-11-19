@@ -6,13 +6,10 @@ void main() {
   final AppsonairFlutterAppPushPlatform initialPlatform =
       AppsonairFlutterAppPushPlatform.instance;
 
-  test(
-    '$MethodChannelAppsonairFlutterAppPush is the default instance',
-    () {
-      expect(
-        initialPlatform,
-        isInstanceOf<MethodChannelAppsonairFlutterAppPush>(),
-      );
-    },
-  );
+  test('$MethodChannelAppsonairFlutterAppPush is the default instance', () {
+    expect(
+      initialPlatform,
+      isInstanceOf<MethodChannelAppsonairFlutterAppPush>(),
+    );
+  });
 }

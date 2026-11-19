@@ -10,7 +10,7 @@ let package = Package(
         .library(name: "appsonair-flutter-apppush", targets: ["appsonair_flutter_apppush"])
     ],
     dependencies: [
-        .package(url: "https://github.com/apps-on-air/appsonair-ios-push-notification.git", exact: "1.0.6-beta")
+        .package(url: "https://github.com/apps-on-air/appsonair-ios-push-notification.git", exact: "1.0.9-beta")
     ],
     targets: [
         .target(

@@ -14,17 +14,15 @@ class MethodChannelAppsonairFlutterAppPush
 
   /// The event channel used to receive the [eventStream] broadcast from the native side.
   @visibleForTesting
-  final eventChannel = const EventChannel(
-    'appsonair_flutter_apppush/events',
-  );
+  final eventChannel = const EventChannel('appsonair_flutter_apppush/events');
 
   Stream<Map<Object?, Object?>>? _eventStream;
 
   @override
   Stream<Map<Object?, Object?>> get eventStream {
     return _eventStream ??= eventChannel.receiveBroadcastStream().map(
-          (event) => (event as Map).cast<Object?, Object?>(),
-        );
+      (event) => (event as Map).cast<Object?, Object?>(),
+    );
   }
 
   Future<T> _invoke<T>(String method, [Map<String, dynamic>? args]) async {
